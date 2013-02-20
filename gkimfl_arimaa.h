@@ -48,10 +48,6 @@ static inline int piece_rank(int piece) {
 #define NORTH_SOUTH 0
 #define WEST_EAST 1
 
-/* Direction signs */
-#define NEGATIVE 0
-#define POSITIVE 1
-
 /* Neighbor bit masks */
 #define HAS_WEST ((uint64_t)0xfefefefefefefefeull)
 #define HAS_EAST ((uint64_t)0x7f7f7f7f7f7f7f7full)
@@ -285,24 +281,199 @@ struct moves {
   struct moves_bits bits[DIRECTION_COUNT];
 };
 
+/* Compute bits that threaten other bits */
+static inline uint64_t bits_threat_to(
+    uint64_t bits,
+    uint64_t threatened,
+    uint64_t ranks[]) {
+
+  uint64_t rank_threatened = 0;
+  uint64_t threats = 0;
+
+  int i;
+  for (i = 0; i < RANK_COUNT; ++i) {
+    threats |= ranks[i] & bit_neighbors_all(rank_threatened);
+    rank_threatened |= ranks[i] & threatened;
+  }
+
+  return bits & threats;
+}
+
+/* Compute bits threatened by other bits */
+static inline uint64_t bits_threatened(
+    uint64_t bits,
+    uint64_t threats,
+    uint64_t ranks[]) {
+
+  uint64_t rank_threats = 0;
+  uint64_t threatened = 0;
+
+  int i;
+  for (i = RANK_COUNT - 1; 0 <= i; --i) {
+    threatened |= ranks[i] & bit_neighbors_all(rank_threats);
+    rank_threats |= ranks[i] & threats;
+  }
+
+  return bits & threatened;
+}
+
+/* Compute bits threatened by other bits in one direction */
+uint64_t bits_dir_threatened(
+    uint64_t bits,
+    uint64_t threats,
+    uint64_t ranks[],
+    int dir) {
+
+  uint64_t rank_threats = 0;
+  uint64_t threatened = 0;
+
+  int i;
+  for (i = RANK_COUNT - 1; 0 <= i; --i) {
+    threatened |= ranks[i] & bit_neighbors(rank_threats, dir);
+    rank_threats |= ranks[i] & threats;
+  }
+
+  return bits & threatened;
+}
+
+/* Compute bits that are not frozen by other bits */
+uint64_t bits_not_frozen(
+    uint64_t bits,
+    uint64_t threats,
+    uint64_t ranks[]) {
+  return bits &
+    (bit_neighbors_all(bits) |
+     ~bits_threatened(bits, threats, ranks));
+}
+
+/* Expand one steps moves that complete a push */
+static inline void state_moves_push_complete(
+    struct state * state,
+    struct moves * moves) {
+
+  /* get presence information */
+  uint64_t present = state->bit_present;
+  uint64_t special = state->bit_special;
+
+  /* get color information */
+  int friend_color = state->player_color;
+  int enemy_color = friend_color ^ 1;
+
+  /* get pieces of each color */
+  uint64_t friend_bits = present & state->bit_color[friend_color];
+  uint64_t enemy_bits = present & state->bit_color[enemy_color];
+
+  /* get friendly bits that can be moved freely */
+  friend_bits = bits_not_frozen(
+      friend_bits, enemy_bits, state->bit_rank);
+
+  /* and only bits that threaten the special bit */
+  friend_bits = bits_threat_to(
+      friend_bits, special, state->bit_rank);
+
+  int dir;
+  for (dir = 0; dir < DIRECTION_COUNT; ++dir) {
+
+    uint64_t bit = friend_bits;
+
+    /* filter in the opposite direction of the special space */
+    bit &= bit_neighbors(special, dir ^ 1);
+
+    moves->bits[dir].bit_mobile = bit;
+    moves->bits[dir].bit_special = 0;
+  }
+}
+
+/* Expand one step moves when not forced to complete a push */
+static inline void state_moves_normal(
+    struct state * state,
+    struct moves * moves) {
+
+  /* get presence information */
+  uint64_t present = state->bit_present;
+  uint64_t special = state->bit_special;
+  uint64_t empty = ~present;
+
+  /* get color information */
+  int friend_color = state->player_color;
+  int enemy_color = friend_color ^ 1;
+
+  /* get pieces of each color */
+  uint64_t friend_bits = present & state->bit_color[friend_color];
+  uint64_t enemy_bits = present & state->bit_color[enemy_color];
+
+  /* get friendly bits that can be moved freely */
+  uint64_t friend_mobile_bits = bits_not_frozen(
+      friend_bits, enemy_bits, state->bit_rank);
+
+  /* get enemy bits that can be moved freely */
+  uint64_t enemy_mobile_bits = bits_threatened(
+      enemy_bits, friend_bits, state->bit_rank);
+
+  /* pieces that can be moved in any direction */
+  uint64_t mobile_bits = friend_mobile_bits | enemy_mobile_bits;
+
+  /* move pieces in each direction */
+  int dir;
+  for(dir = 0; dir < DIRECTION_COUNT; ++dir) {
+
+    int opposite_dir = dir ^ 1;
+
+    uint64_t dir_mobile = mobile_bits;
+
+    /* enemy pieces threatened by a pull in this direction */
+    uint64_t special_mobile = bits_dir_threatened(
+        enemy_bits, special, state->bit_rank, opposite_dir);
+
+    /* remove friendly rabbits north or south */
+    if(dir_axis(dir) == NORTH_SOUTH &&
+        dir_sign(dir) != friend_color) {
+      uint64_t rabbits = state->bit_rank[RBT];
+      rabbits &= state->bit_color[friend_color];
+      dir_mobile &= ~rabbits;
+    }
+
+    /* add special pieces */
+    dir_mobile |= special_mobile;
+
+    /* filter in the opposite direction of an empty space */
+    dir_mobile &= bit_neighbors(empty, opposite_dir);
+
+    /* to reduce the size of the state space,
+     * ignore non-threatening friendly special */
+    uint64_t next_special = dir_mobile & ~special_mobile;
+    uint64_t special_friends = next_special & friend_bits;
+    uint64_t special_enemies = next_special & enemy_bits;
+
+    special_friends &= bits_threat_to(
+      special_friends, enemy_bits, state->bit_rank);
+
+    next_special = special_friends | special_enemies;
+
+    /* ready to make some moves */
+    moves->bits[dir].bit_mobile = dir_mobile;
+    moves->bits[dir].bit_special = next_special;
+  }
+}
+
+/* Force a push completion if special is the enemy color */
+static inline int state_force_push_complete(
+    struct state * state) {
+
+  return state->player_color !=
+    state_bit_color(state, state->bit_special);
+}
+
 /* Compute one step moves from a state */
 static inline void state_moves(
     struct state * state,
     struct moves * moves) {
 
-  int dir;
-
-  /* TODO: compute moves */
-
-  moves->direction = 0;
-  moves->parent = *state;
-
-  for(dir = 0; dir < DIRECTION_COUNT; ++dir) {
-
-    struct moves_bits * bits = & moves->bits[dir];
-
-    bits->bit_mobile = 0;
-    bits->bit_special = 0;
+  if ( state_force_push_complete(state) ) {
+    state_moves_push_complete(state, moves);
+  }
+  else {
+    state_moves_normal(state, moves);
   }
 }
 
@@ -321,20 +492,20 @@ static inline int moves_next_move(
 
     if(bits->bit_mobile) {
       int pos = bit_pos(bits->bit_mobile);
+      uint64_t bit = pos_bit(pos);
 
       move->piece = state_bit_piece(& moves->parent, pos);
       move->pos = pos;
       move->direction = moves->direction;
 
-      /* TODO: compute special */
-      move->special = 0;
+      move->special = bit & bits->bit_special ? 1 : 0;
 
       /* capture will be set by state_capt */
       move->capture = 0;
       move->capture_piece = 0;
       move->capture_pos = 0;
 
-      bits->bit_mobile ^= pos_bit(pos);
+      bits->bit_mobile ^= bit;
 
       return 1;
     }

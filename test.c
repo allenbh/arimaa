@@ -38,10 +38,8 @@ int test_piece_rank() {
 }
 
 int test_dir_sign() {
-  if( NEGATIVE != dir_sign(NORTH) ) return 1;
-  if( POSITIVE != dir_sign(SOUTH) ) return 2;
-  if( NEGATIVE != dir_sign(WEST) ) return 3;
-  if( POSITIVE != dir_sign(EAST) ) return 4;
+  if( GOLD != dir_sign(NORTH) ) return 1;
+  if( SILV != dir_sign(SOUTH) ) return 2;
   return 0;
 }
 
