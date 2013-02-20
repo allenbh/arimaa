@@ -346,7 +346,7 @@ uint64_t bits_not_frozen(
      ~bits_threatened(bits, threats, ranks));
 }
 
-/* Expand one steps moves that complete a push */
+/* Expand one step moves that complete a push */
 static inline void state_moves_push_complete(
     struct state * state,
     struct moves * moves) {
@@ -460,8 +460,10 @@ static inline void state_moves_normal(
 static inline int state_force_push_complete(
     struct state * state) {
 
-  return state->player_color !=
-    state_bit_color(state, state->bit_special);
+  int enemy_color = state->player_color ^ 1;
+
+  return ((uint64_t)0) !=
+    (state->bit_color[enemy_color] & state->bit_special);
 }
 
 /* Compute one step moves from a state */

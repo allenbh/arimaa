@@ -374,9 +374,9 @@ int test_state_moves__protected() {
 
   state.player_color = GOLD;
 
-  state_put(&state, pos_bit(42), piece(GOLD, RBT));
-  state_put(&state, pos_bit(41), piece(GOLD, CAT));
-  state_put(&state, pos_bit(40), piece(SILV, DOG));
+  state_put(&state, pos_bit(42), piece(GOLD, CAT));
+  state_put(&state, pos_bit(41), piece(GOLD, DOG));
+  state_put(&state, pos_bit(40), piece(SILV, HRS));
 
   state_moves(&state, &moves);
 
@@ -390,18 +390,47 @@ int test_state_moves__protected() {
 }
 
 int test_state_moves__special() {
-  return -1;
+  struct state state = {0};
+  struct moves moves = {0};
+
+  state.player_color = SILV;
+
+  state_put(&state, pos_bit(41), piece(GOLD, DOG));
+  state_put(&state, pos_bit(49), piece(SILV, HRS));
+
+  state_moves(&state, &moves);
+
+  if( pos_bit(41) != moves.bits[NORTH].bit_special ) return 4;
+  if( pos_bit(49) != moves.bits[SOUTH].bit_special ) return 4;
+  if( (pos_bit(41)|pos_bit(49)) !=
+      moves.bits[WEST].bit_special ) return 3;
+  if( (pos_bit(41)|pos_bit(49)) !=
+      moves.bits[EAST].bit_special ) return 4;
+  return 0;
 }
 
 int test_state_moves__notspecial() {
-  return -1;
+  struct state state = {0};
+  struct moves moves = {0};
+
+  state.player_color = SILV;
+
+  state_put(&state, pos_bit(49), piece(SILV, HRS));
+
+  state_moves(&state, &moves);
+
+  if( 0 != moves.bits[NORTH].bit_special ) return 1;
+  if( 0 != moves.bits[SOUTH].bit_special ) return 2;
+  if( 0 != moves.bits[WEST].bit_special ) return 3;
+  if( 0 != moves.bits[EAST].bit_special ) return 4;
+  return 0;
 }
 
 int test_state_moves__push() {
   struct state state = {0};
   struct moves moves = {0};
 
-  state.player_color = GOLD;
+  state.player_color = SILV;
 
   state_put(&state, pos_bit(41), piece(GOLD, CAT));
   state_put(&state, pos_bit(40), piece(SILV, DOG));
@@ -440,7 +469,7 @@ int test_state_moves__pull_complete() {
   struct state state = {0};
   struct moves moves = {0};
 
-  state.player_color = GOLD;
+  state.player_color = SILV;
 
   state_put(&state, pos_bit(41), piece(GOLD, CAT));
   state_put(&state, pos_bit(40), piece(SILV, DOG));
@@ -454,6 +483,7 @@ int test_state_moves__pull_complete() {
   if( 0 != moves.bits[NORTH].bit_mobile ) return 2;
   if( 0 != moves.bits[SOUTH].bit_mobile ) return 3;
   if( 0 != moves.bits[EAST].bit_mobile ) return 4;
+  if( 0 != moves.bits[WEST].bit_special ) return 5;
   return 0;
 }
 
