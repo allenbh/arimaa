@@ -1,9 +1,12 @@
-.PHONY: all clean default run_tests
-.SILENT: run_tests
+.PHONY: all clean test
+.SILENT: test
 
-all: test run_tests
+all: test
 
-test: test.c gkimfl_arimaa.h
+clean:
+	rm -f gkimfl_arimaa_test
 
-run_tests: test
+gkimfl_arimaa_test: gkimfl_arimaa_test.c gkimfl_arimaa.h
+
+test: gkimfl_arimaa_test
 	for T in $^; do ./$$T; done
