@@ -163,7 +163,7 @@ static inline int state_bit_piece(
 }
 
 /* Put a piece on the board */
-static inline void state_put(
+static inline void state_bit_put(
     struct state * state,
     uint64_t bit,
     int piece) {
@@ -174,6 +174,25 @@ static inline void state_put(
   state->bit_present |= bit;
   state->bit_color[color] |= bit;
   state->bit_rank[rank] |= bit;
+}
+
+/* Clear a piece from the board */
+static inline void state_bit_clear(
+    struct state * state,
+    uint64_t bit) {
+
+  int i;
+
+  bit = ~bit;
+
+  state->bit_present &= bit;
+  state->bit_special &= bit;
+  for(i = 0; i < COLOR_COUNT; ++i) {
+    state->bit_color[i] &= bit;
+  }
+  for(i = 0; i < RANK_COUNT; ++i) {
+    state->bit_rank[i] &= bit;
+  }
 }
 
 /* ------------------------------------------------------------------ */
