@@ -1,0 +1,1 @@
+from gkimfl import arimaa

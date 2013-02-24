@@ -8,7 +8,7 @@ setup (
     test_suite = 'gkimfl_arimaa_test',
     ext_modules = [
       Extension (
-        'gkimfl_arimaa',
+        'gkimfl.arimaa',
         sources = ['gkimfl_arimaa_module.c'])
       ]
     )

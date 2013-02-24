@@ -75,7 +75,7 @@ Gk_State_members[] = {
 static PyTypeObject
 Gk_State_type = {
   PyVarObject_HEAD_INIT(NULL, 0)
-  "gkimfl_arimaa.state",               /* tp_name */
+  "arimaa.state",                      /* tp_name */
   sizeof(Gk_State),                    /* tp_basicsize */
   0,                                   /* tp_itemsize */
   0,                                   /* tp_dealloc */
@@ -152,7 +152,7 @@ Gk_Move_members[] = {
 static PyTypeObject
 Gk_Move_type = {
   PyVarObject_HEAD_INIT(NULL, 0)
-  "gkimfl_arimaa.move",                /* tp_name */
+  "arimaa.move",                       /* tp_name */
   sizeof(Gk_Move),                     /* tp_basicsize */
   0,                                   /* tp_itemsize */
   0,                                   /* tp_dealloc */
@@ -209,7 +209,7 @@ Gk_MoveIter_init(Gk_MoveIter * self, PyObject * args, PyObject * kwds);
 static PyTypeObject
 Gk_MoveIter_type = {
   PyVarObject_HEAD_INIT(NULL, 0)
-  "gkimfl_arimaa.move_iter",           /* tp_name */
+  "arimaa.move_iter",                  /* tp_name */
   sizeof(Gk_MoveIter),                 /* tp_basicsize */
   0,                                   /* tp_itemsize */
   0,                                   /* tp_dealloc */
@@ -741,16 +741,16 @@ Gk_MoveIter_init(Gk_MoveIter * self, PyObject * args, PyObject * kwds) {
 /* Module                                                             */
 /* ------------------------------------------------------------------ */
 
-static PyModuleDef gkimfl_arimaa = {
+static PyModuleDef arimaa = {
     PyModuleDef_HEAD_INIT,
-    "gkimfl_arimaa",
+    "arimaa",
     "GkIMFL Arimaa fast move generator",
     -1,
     NULL, NULL, NULL, NULL, NULL
 };
 
 PyMODINIT_FUNC
-PyInit_gkimfl_arimaa(void) 
+PyInit_arimaa(void) 
 {
     PyObject* m;
 
@@ -767,7 +767,7 @@ PyInit_gkimfl_arimaa(void)
     if (PyType_Ready(&Gk_MoveIter_type) < 0)
         return NULL;
 
-    m = PyModule_Create(&gkimfl_arimaa);
+    m = PyModule_Create(&arimaa);
     if (m == NULL)
         return NULL;
 
