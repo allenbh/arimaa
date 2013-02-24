@@ -35,6 +35,9 @@ Gk_State_setattro(Gk_State * self, PyObject * attr_obj,
 static int
 Gk_State_assign(Gk_State * self, Py_ssize_t pos, PyObject * val);
 
+static PyObject *
+Gk_State_is_forced(Gk_State * self);
+
 static PySequenceMethods
 Gk_State_sequence = {
   (lenfunc) Gk_State_length,           /* sq_length */
@@ -47,6 +50,13 @@ Gk_State_sequence = {
   0,                                   /* sq_contains */
   0,                                   /* sq_inplace_concat */
   0,                                   /* sq_inplace_repeat */
+};
+
+static PyMethodDef
+Gk_State_methods[] = {
+  { "is_forced", (PyCFunction)Gk_State_is_forced, METH_NOARGS,
+    "Forced completion of a push move" },
+  {0}
 };
 
 static PyMemberDef
@@ -354,6 +364,14 @@ Gk_State_setattro(Gk_State * self, PyObject * attr_obj,
 
   PyErr_SetNone(PyExc_AttributeError);
   return -1;
+}
+
+static PyObject *
+Gk_State_is_forced(Gk_State * self) {
+  if(state_force_push_complete(&self->ob_state)) {
+    Py_RETURN_TRUE;
+  }
+  Py_RETURN_FALSE;
 }
 
 /* ------------------------------------------------------------------ */
