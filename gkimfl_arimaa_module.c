@@ -16,14 +16,17 @@ typedef struct {
   struct state ob_state;
 } Gk_State;
 
-static Py_hash_t
-Gk_State_hash(Gk_State * self);
-
 static Py_ssize_t
 Gk_State_length(Gk_State * self);
 
 static PyObject *
 Gk_State_item(Gk_State * self, Py_ssize_t pos);
+
+static int
+Gk_State_assign(Gk_State * self, Py_ssize_t pos, PyObject * val);
+
+static Py_hash_t
+Gk_State_hash(Gk_State * self);
 
 static PyObject *
 Gk_State_getattro(Gk_State * self, PyObject * attr_obj);
@@ -32,11 +35,14 @@ static int
 Gk_State_setattro(Gk_State * self, PyObject * attr_obj,
     PyObject * val_obj);
 
-static int
-Gk_State_assign(Gk_State * self, Py_ssize_t pos, PyObject * val);
+static PyObject *
+Gk_State_richcmp(Gk_State * self, Gk_State * other, int op);
 
 static PyObject *
 Gk_State_is_forced(Gk_State * self);
+
+static int
+Gk_State_init(Gk_State * self, PyObject * args, PyObject * kwds);
 
 static PySequenceMethods
 Gk_State_sequence = {
@@ -91,7 +97,7 @@ Gk_State_type = {
   "GkIMFL Arimaa state",               /* tp_doc */
   0,                                   /* tp_traverse */
   0,                                   /* tp_clear */
-  0,                                   /* tp_richcompare */
+  (richcmpfunc)Gk_State_richcmp,       /* tp_richcompare */
   0,                                   /* tp_weaklistoffset */
   0,                                   /* tp_iter */
   0,                                   /* tp_iternext */
@@ -103,7 +109,7 @@ Gk_State_type = {
   0,                                   /* tp_descr_get */
   0,                                   /* tp_descr_set */
   0,                                   /* tp_dictoffset */
-  0,                                   /* tp_init */
+  (initproc)Gk_State_init,             /* tp_init */
   0,                                   /* tp_alloc */
   0,                                   /* tp_new */
 };
@@ -120,6 +126,12 @@ typedef struct {
 static Py_hash_t
 Gk_Move_hash(Gk_Move * self);
 
+static PyObject *
+Gk_Move_richcmp(Gk_Move * self, Gk_Move * other, int op);
+
+static int
+Gk_Move_init(Gk_Move * self, PyObject * args, PyObject * kwds);
+  
 static PyMemberDef
 Gk_Move_members[] = {
   { "piece", T_INT, offsetof(Gk_Move, ob_move.piece), 0,
@@ -162,7 +174,7 @@ Gk_Move_type = {
   "GkIMFL Arimaa move",                /* tp_doc */
   0,                                   /* tp_traverse */
   0,                                   /* tp_clear */
-  0,                                   /* tp_richcompare */
+  (richcmpfunc)Gk_Move_richcmp,        /* tp_richcompare */
   0,                                   /* tp_weaklistoffset */
   0,                                   /* tp_iter */
   0,                                   /* tp_iternext */
@@ -174,7 +186,7 @@ Gk_Move_type = {
   0,                                   /* tp_descr_get */
   0,                                   /* tp_descr_set */
   0,                                   /* tp_dictoffset */
-  0,                                   /* tp_init */
+  (initproc)Gk_Move_init,              /* tp_init */
   0,                                   /* tp_alloc */
   0,                                   /* tp_new */
 };
@@ -240,13 +252,6 @@ Gk_MoveIter_type = {
 /* State methods                                                      */
 /* ------------------------------------------------------------------ */
 
-static Py_hash_t
-Gk_State_hash(Gk_State * self) {
-  return _Py_HashBytes(
-      (unsigned char *)&self->ob_state,
-      sizeof(struct state));
-}
-
 static Py_ssize_t
 Gk_State_length(Gk_State * self) {
   return 64;
@@ -268,29 +273,120 @@ Gk_State_item(Gk_State * self, Py_ssize_t pos) {
 static int
 Gk_State_assign(Gk_State * self, Py_ssize_t pos, PyObject * val_obj) {
 
+  uint64_t bit = pos_bit(pos);
   int piece;
 
   if(val_obj == Py_None) {
-    state_bit_clear(&self->ob_state, pos_bit(pos));
+    state_bit_clear(&self->ob_state, bit);
     return 0;
   }
 
-  piece = PyLong_AsLong(val_obj);
-  if(PyErr_Occurred()) {
+  if(!PyLong_Check(val_obj)) {
+    PyErr_SetNone(PyExc_TypeError);
     return -1;
   }
-  state_bit_clear(&self->ob_state, pos_bit(pos));
-  state_bit_put(&self->ob_state, pos_bit(pos), piece);
 
+  piece = PyLong_AsLong(val_obj);
+
+  if(piece < 0 || piece >= PIECE_COUNT) {
+    PyErr_SetNone(PyExc_ValueError);
+    return -1;
+  }
+
+  state_bit_clear(&self->ob_state, bit);
+  state_bit_put(&self->ob_state, bit, piece);
+
+  return 0;
+}
+
+static Py_hash_t
+Gk_State_hash(Gk_State * self) {
+
+  return _Py_HashBytes(
+      (unsigned char *)&self->ob_state,
+      sizeof(struct state));
+}
+
+static PyObject *
+_Gk_State_getspecial(Gk_State * self) {
+
+  uint64_t bit = self->ob_state.bit_special;
+  int pos;
+  int piece;
+
+  if(!bit) {
+    Py_RETURN_NONE;
+  }
+
+  pos = bit_pos(bit);
+  piece = state_bit_piece(&self->ob_state, bit);
+
+  return Py_BuildValue("ii", pos, piece);
+}
+
+static int
+_Gk_State_setspecial(Gk_State * self, PyObject * val_obj) {
+
+  uint64_t bit;
+  int pos;
+  int piece;
+
+  if(val_obj == Py_None) {
+    bit = self->ob_state.bit_special;
+    if(bit) {
+      state_bit_clear(&self->ob_state, bit);
+    }
+    return 0;
+  }
+
+  if(!PyArg_ParseTuple(val_obj, "ii", &pos, &piece)) {
+    PyErr_SetNone(PyExc_TypeError);
+    return -1;
+  }
+
+  bit = self->ob_state.bit_special;
+  if(bit) {
+    state_bit_clear(&self->ob_state, bit);
+  }
+
+  bit = pos_bit(pos);
+
+  state_bit_clear(&self->ob_state, bit);
+  state_bit_put(&self->ob_state, bit, piece);
+
+  self->ob_state.bit_present ^= bit;
+  self->ob_state.bit_special ^= bit;
+
+  return 0;
+}
+
+static int
+_Gk_State_setpieces(Gk_State * self, PyObject * val_obj) {
+  int pos;
+  if(!PySequence_Check(val_obj)) {
+    PyErr_SetNone(PyExc_TypeError);
+    return -1;
+  }
+  if(PySequence_Length(val_obj) != 64) {
+    PyErr_SetNone(PyExc_ValueError);
+    return -1;
+  }
+  for(pos = 0; pos < 64; ++pos) {
+    PyObject * piece = PySequence_GetItem(val_obj, pos);
+    if(!piece) {
+      return -1;
+    }
+    if(!Gk_State_assign(self, pos, piece)) {
+      return -1;
+    }
+  }
   return 0;
 }
 
 static PyObject *
 Gk_State_getattro(Gk_State * self, PyObject * attr_obj) {
 
-  int piece;
-  int pos;
-  uint64_t bit;
+  char * attr_str;
   PyObject * attr_val;
 
   attr_val = PyObject_GenericGetAttr((PyObject*)self, attr_obj);
@@ -299,20 +395,18 @@ Gk_State_getattro(Gk_State * self, PyObject * attr_obj) {
   }
   PyErr_Clear();
 
-  char * attr_str = PyUnicode_AsUTF8(attr_obj);
+  attr_str = PyUnicode_AsUTF8(attr_obj);
   if(!attr_str) {
     PyErr_SetNone(PyExc_AttributeError);
     return NULL;
   }
 
   if(!strcmp(attr_str, "special")) {
-    bit = self->ob_state.bit_special;
-    if(!bit) {
-      Py_RETURN_NONE;
-    }
-    pos = bit_pos(bit);
-    piece = state_bit_piece(&self->ob_state, bit);
-    return Py_BuildValue("ii", pos, piece);
+    return _Gk_State_getspecial(self);
+  }
+
+  if(!strcmp(attr_str, "pieces")) {
+    return (PyObject*)self;
   }
 
   PyErr_SetNone(PyExc_AttributeError);
@@ -323,47 +417,86 @@ static int
 Gk_State_setattro(Gk_State * self, PyObject * attr_obj,
     PyObject * val_obj) {
 
-  int piece;
-  int pos;
-  uint64_t bit;
+  char * attr_str;
 
   if(!PyObject_GenericSetAttr((PyObject*)self, attr_obj, val_obj)) {
     return 0;
   }
   PyErr_Clear();
 
-  char * attr_str = PyUnicode_AsUTF8(attr_obj);
+  attr_str = PyUnicode_AsUTF8(attr_obj);
   if(!attr_str) {
     PyErr_SetNone(PyExc_AttributeError);
     return -1;
   }
 
   if(!strcmp(attr_str, "special")) {
-    if(val_obj == Py_None) {
-      bit = self->ob_state.bit_special;
-      if(bit) {
-        state_bit_clear(&self->ob_state, bit);
-      }
-      return 0;
-    }
-    if(PyArg_ParseTuple(val_obj, "ii", &pos, &piece)) {
-      bit = self->ob_state.bit_special;
-      if(bit) {
-        state_bit_clear(&self->ob_state, bit);
-      }
-      bit = pos_bit(pos);
-      state_bit_clear(&self->ob_state, bit);
-      state_bit_put(&self->ob_state, bit, piece);
-      self->ob_state.bit_present ^= bit;
-      self->ob_state.bit_special ^= bit;
-      return 0;
-    }
-    PyErr_SetNone(PyExc_TypeError);
-    return -1;
+    return _Gk_State_setspecial(self, val_obj);
+  }
+
+  if(!strcmp(attr_str, "pieces")) {
+    return _Gk_State_setpieces(self, val_obj);
   }
 
   PyErr_SetNone(PyExc_AttributeError);
   return -1;
+}
+
+static int
+_Gk_State_equal(Gk_State * self, Gk_State *other) {
+  int i;
+  if(self->ob_state.player_color !=
+      other->ob_state.player_color) {
+    return 0;
+  }
+  if(self->ob_state.bit_present !=
+      other->ob_state.bit_present) {
+    return 0;
+  }
+  for(i = 0; i < COLOR_COUNT; ++i) {
+    if(self->ob_state.bit_color[i] !=
+        other->ob_state.bit_color[i]) {
+      return 0;
+    }
+  }
+  for(i = 0; i < RANK_COUNT; ++i) {
+    if(self->ob_state.bit_rank[i] !=
+        other->ob_state.bit_rank[i]) {
+      return 0;
+    }
+  }
+  return 1;
+}
+
+static PyObject *
+Gk_State_richcmp(Gk_State * self, Gk_State * other, int op) {
+
+  if(!PyObject_TypeCheck((PyObject*)other, &Gk_State_type)) {
+    goto err_type;
+  }
+
+  switch(op) {
+
+    case Py_EQ:
+      if (_Gk_State_equal(self, other)) {
+        Py_RETURN_TRUE;
+      }
+      else {
+        Py_RETURN_FALSE;
+      }
+
+    case Py_NE:
+      if (_Gk_State_equal(self, other)) {
+        Py_RETURN_FALSE;
+      }
+      else {
+        Py_RETURN_TRUE;
+      }
+  }
+
+err_type:
+  PyErr_SetNone(PyExc_TypeError);
+  return NULL;
 }
 
 static PyObject *
@@ -372,6 +505,46 @@ Gk_State_is_forced(Gk_State * self) {
     Py_RETURN_TRUE;
   }
   Py_RETURN_FALSE;
+}
+
+static int
+Gk_State_init(Gk_State * self, PyObject * args, PyObject * kwds) {
+  
+  static char * kwd_names[] = {
+    "pieces", "player_color", "special", NULL };
+
+  PyObject * pieces;
+  PyObject * player_color;
+  PyObject * special;
+
+  if(!PyArg_ParseTupleAndKeywords(
+        args, kwds, "|OOO", kwd_names,
+        &pieces, &player_color, &special)) {
+    return -1;
+  }
+
+  if(pieces) {
+    if(!PyObject_SetAttrString((PyObject*)self,
+          "pieces", pieces)) {
+      return -1;
+    }
+  }
+    
+  if(player_color) {
+    if(!PyObject_SetAttrString((PyObject*)self,
+          "player_color", player_color)) {
+      return -1;
+    }
+  }
+
+  if(special) {
+    if(!PyObject_SetAttrString((PyObject*)self,
+          "special", special)) {
+      return -1;
+    }
+  }
+
+  return 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -383,6 +556,132 @@ Gk_Move_hash(Gk_Move * self) {
   return _Py_HashBytes(
       (unsigned char *)&self->ob_move,
       sizeof(struct move));
+}
+
+static int
+_Gk_Move_equal(Gk_Move * self, Gk_Move *other) {
+  if(self->ob_move.piece !=
+      other->ob_move.piece) {
+    return 0;
+  }
+  if(self->ob_move.pos !=
+      other->ob_move.pos) {
+    return 0;
+  }
+  if(self->ob_move.direction !=
+      other->ob_move.direction) {
+    return 0;
+  }
+  if(self->ob_move.capture !=
+      other->ob_move.capture) {
+    return 0;
+  }
+  if(self->ob_move.capture_piece !=
+      other->ob_move.capture_piece) {
+    return 0;
+  }
+  if(self->ob_move.capture_pos !=
+      other->ob_move.capture_pos) {
+    return 0;
+  }
+  return 1;
+}
+
+static PyObject *
+Gk_Move_richcmp(Gk_Move * self, Gk_Move * other, int op) {
+
+  if(!PyObject_TypeCheck((PyObject*)other, &Gk_Move_type)) {
+    goto err_type;
+  }
+
+  switch(op) {
+
+    case Py_NE:
+      if (_Gk_Move_equal(self, other)) {
+        Py_RETURN_FALSE;
+      }
+      else {
+        Py_RETURN_TRUE;
+      }
+
+    case Py_EQ:
+      if (_Gk_Move_equal(self, other)) {
+        Py_RETURN_TRUE;
+      }
+      else {
+        Py_RETURN_FALSE;
+      }
+  }
+
+err_type:
+  PyErr_SetNone(PyExc_TypeError);
+  return NULL;
+}
+
+static int
+Gk_Move_init(Gk_Move * self, PyObject * args, PyObject * kwds) {
+  
+  static char * kwd_names[] = {
+    "piece", "pos", "direction", "capture",
+    "capture_piece", "capture_pos", NULL };
+
+  PyObject * piece;
+  PyObject * pos;
+  PyObject * direction;
+  PyObject * capture;
+  PyObject * capture_piece;
+  PyObject * capture_pos;
+
+  if(!PyArg_ParseTupleAndKeywords(
+        args, kwds, "|OOOOOO", kwd_names,
+        &piece, &pos, &direction, &capture,
+        &capture_piece, &capture_pos)) {
+    return -1;
+  }
+
+  if(piece) {
+    if(!PyObject_SetAttrString((PyObject*)self,
+          "piece", piece)) {
+      return -1;
+    }
+  }
+    
+  if(pos) {
+    if(!PyObject_SetAttrString((PyObject*)self,
+          "pos", pos)) {
+      return -1;
+    }
+  }
+    
+  if(direction) {
+    if(!PyObject_SetAttrString((PyObject*)self,
+          "direction", direction)) {
+      return -1;
+    }
+  }
+    
+  if(capture) {
+    if(!PyObject_SetAttrString((PyObject*)self,
+          "capture", capture)) {
+      return -1;
+    }
+  }
+    
+  if(capture_piece) {
+    if(!PyObject_SetAttrString((PyObject*)self,
+          "capture_piece", capture_piece)) {
+      return -1;
+    }
+  }
+    
+  if(capture_pos) {
+    if(!PyObject_SetAttrString((PyObject*)self,
+          "capture_pos", capture_pos)) {
+      return -1;
+    }
+  }
+    
+  return 0;
 }
 
 /* ------------------------------------------------------------------ */

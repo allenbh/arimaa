@@ -21,6 +21,9 @@
 #define ELF 5
 #define RANK_COUNT 6
 
+/* Pieces */
+#define PIECE_COUNT (COLOR_COUNT * RANK_COUNT)
+
 static inline int piece(int color, int rank) {
   return (rank << 1) | color;
 }
