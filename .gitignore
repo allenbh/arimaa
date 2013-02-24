@@ -1,5 +1,9 @@
 .*
 *~
 *.o
+*.so
+*.pyc
+*.egg-info
 build
+__pycache__
 gkimfl_arimaa_test
