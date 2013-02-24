@@ -95,7 +95,7 @@ Gk_State_type = {
   0,                                   /* tp_weaklistoffset */
   0,                                   /* tp_iter */
   0,                                   /* tp_iternext */
-  0,                                   /* tp_methods */
+  Gk_State_methods,                    /* tp_methods */
   Gk_State_members,                    /* tp_members */
   0,                                   /* tp_getset */
   0,                                   /* tp_base */
