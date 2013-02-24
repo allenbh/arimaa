@@ -5,11 +5,11 @@ setup (
     description = 'Fast arimaa move generator',
     author = 'Allen Hubbe',
     version = '0.1',
-    test_suite = 'gkimfl_arimaa_test',
+    test_suite = 'test.gkimfl.test',
     ext_modules = [
       Extension (
         'gkimfl.arimaa',
-        sources = ['gkimfl_arimaa_module.c'])
+        sources = ['src/gkimfl_arimaa_module.c'])
       ]
     )
 
