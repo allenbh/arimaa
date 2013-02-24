@@ -201,7 +201,7 @@ static inline void state_bit_clear(
 
 /* Traps */
 #define TRAP_BITS ((uint64_t)0x0000240000240000ull)
-#define TRAP_NEIGHBORS ((uint64_t)0x00245a2424512400ull)
+#define TRAP_NEIGHBORS ((uint64_t)0x00245a24245a2400ull)
 
 /* Find nearest trap */
 static inline int trap_pos(int pos) {
@@ -244,7 +244,8 @@ static inline void state_capt(
 
     color = state_bit_color(state, bit);
 
-    if(bit & bit_neighbors_all(state->bit_color[color])) {
+    if(bit & bit_neighbors_all(
+          state->bit_present & state->bit_color[color])) {
       return; /* friendly piece nearby */
     }
 
@@ -266,15 +267,16 @@ static inline void state_trans(
     struct move * move) {
 
   uint64_t bit = pos_bit(move->pos);
-  uint64_t bit_special = move->special ? bit : 0;
   uint64_t bit_moved = bit_neighbors(bit, move->direction);
-  uint64_t bit_flip = (bit | bit_moved) ^ bit_special;
+  uint64_t bit_flip = bit | bit_moved;
+  uint64_t bit_special = move->special ? bit : 0;
 
   int color = piece_color(move->piece);
   int rank = piece_rank(move->piece);
 
   state->bit_special = bit_special;
   state->bit_present ^= bit_flip;
+  bit_flip ^= bit_special;
   state->bit_color[color] ^= bit_flip;
   state->bit_rank[rank] ^= bit_flip;
 
@@ -490,6 +492,8 @@ static inline void state_moves(
     struct state * state,
     struct moves * moves) {
 
+  moves->parent = *state;
+
   if ( state_force_push_complete(state) ) {
     state_moves_push_complete(state, moves);
   }
@@ -515,7 +519,7 @@ static inline int moves_next_move(
       int pos = bit_pos(bits->bit_mobile);
       uint64_t bit = pos_bit(pos);
 
-      move->piece = state_bit_piece(& moves->parent, pos);
+      move->piece = state_bit_piece(& moves->parent, bit);
       move->pos = pos;
       move->direction = moves->direction;
 
