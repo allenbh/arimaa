@@ -1,20 +1,7 @@
 
 import unittest
-import gkimfl_arimaa as g
-
-piece_sym = 'RrCcDdHhMmEe'
-
-def piece_as_sym(piece, pos=None):
-  if piece is None:
-    if pos in (18, 21, 42, 45):
-      return 'x'
-    return ' '
-  return piece_sym[piece]
-
-sym_piece = { sym:piece for piece,sym in enumerate(piece_sym) }
-
-def sym_as_piece(sym):
-  return sym_piece.get(sym, None)
+import gkimfl.arimaa as g
+import gkimfl.marshal as m
 
 def stateOfficialTwo(player_color):
   '''Official move generator input two
@@ -33,11 +20,10 @@ def stateOfficialTwo(player_color):
   syms = (
       ' rc  c  r r rr      H d      MHr' +
       'DdRr   h    e  rR C   ER  RRRRm ' )
-  state = g.state()
-  state.color = player_color
-  for i,v in enumerate(syms):
-    state[i] = sym_as_piece(v)
-  return state
+  return g.state(
+      pieces = map(m.sym_piece, syms),
+      color = player_color,
+      )
 
 def stateA(player_color):
   '''State A
@@ -56,11 +42,10 @@ def stateA(player_color):
   syms = (
       '  D      hdC     Ex  x  rCcR    ' +
       '  e     cDH  xM  d              ' )
-  state = g.state()
-  state.color = player_color
-  for i,v in enumerate(syms):
-    state[i] = sym_as_piece(v)
-  return state
+  return g.state(
+      pieces = map(m.sym_piece, syms),
+      color = player_color,
+      )
 
 def test_step(self):
   state = self.state
