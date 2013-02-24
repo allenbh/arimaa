@@ -1,5 +1,6 @@
-.PHONY: all build clean native_test python_test test
-.SILENT: python_test native_test
+.PHONY: all build clean test test_python test_native
+.SILENT: test_python test_native
+.IGNORE: test_python test_native
 
 PYTHON := python3.3
 
@@ -12,15 +13,16 @@ clean:
 	rm -f gkimfl_arimaa_test
 	$(PYTHON) setup.py clean --all
 
-test: python_test native_test
+test: test_python test_native
 
-python_test:
+test_python:
 	echo "Running python tests..."
 	$(PYTHON) setup.py build test
 
-native_test: gkimfl_arimaa_test
+test_native: gkimfl_arimaa_test
 	echo "Running native tests..."
 	for T in $^; do ./$$T; done
 
 gkimfl_arimaa_test: gkimfl_arimaa_test.c gkimfl_arimaa.h
+gkimfl_arimaa_test: CFLAGS += -g
 
