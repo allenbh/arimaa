@@ -362,24 +362,45 @@ _Gk_State_setspecial(Gk_State * self, PyObject * val_obj) {
 
 static int
 _Gk_State_setpieces(Gk_State * self, PyObject * val_obj) {
-  int pos;
-  if(!PySequence_Check(val_obj)) {
-    PyErr_SetNone(PyExc_TypeError);
+  PyObject * iter;
+  PyObject * piece;
+  int pos = 0;
+
+  iter = PyObject_GetIter(val_obj);
+
+  if (!iter) {
     return -1;
   }
-  if(PySequence_Length(val_obj) != 64) {
+
+  while(piece = PyIter_Next(val_obj)) {
+
+    if(pos >= 64) {
+      Py_DECREF(piece);
+      Py_DECREF(iter);
+      PyErr_SetNone(PyExc_ValueError);
+      return -1;
+    }
+
+    if(Gk_State_assign(self, pos, piece)) {
+      Py_DECREF(piece);
+      Py_DECREF(iter);
+      return -1;
+    }
+
+    Py_DECREF(piece);
+    ++pos;
+  }
+  Py_DECREF(iter);
+
+  if(PyErr_Occurred()) {
+    return -1;
+  }
+
+  if(pos != 64) {
     PyErr_SetNone(PyExc_ValueError);
     return -1;
   }
-  for(pos = 0; pos < 64; ++pos) {
-    PyObject * piece = PySequence_GetItem(val_obj, pos);
-    if(!piece) {
-      return -1;
-    }
-    if(!Gk_State_assign(self, pos, piece)) {
-      return -1;
-    }
-  }
+
   return 0;
 }
 
@@ -511,34 +532,34 @@ static int
 Gk_State_init(Gk_State * self, PyObject * args, PyObject * kwds) {
   
   static char * kwd_names[] = {
-    "pieces", "player_color", "special", NULL };
+    "pieces", "color", "special", NULL };
 
-  PyObject * pieces;
-  PyObject * player_color;
-  PyObject * special;
+  PyObject * pieces = NULL;
+  PyObject * color = NULL;
+  PyObject * special = NULL;
 
   if(!PyArg_ParseTupleAndKeywords(
         args, kwds, "|OOO", kwd_names,
-        &pieces, &player_color, &special)) {
+        &pieces, &color, &special)) {
     return -1;
   }
 
   if(pieces) {
-    if(!PyObject_SetAttrString((PyObject*)self,
+    if(PyObject_SetAttrString((PyObject*)self,
           "pieces", pieces)) {
       return -1;
     }
   }
     
-  if(player_color) {
-    if(!PyObject_SetAttrString((PyObject*)self,
-          "player_color", player_color)) {
+  if(color) {
+    if(PyObject_SetAttrString((PyObject*)self,
+          "color", color)) {
       return -1;
     }
   }
 
   if(special) {
-    if(!PyObject_SetAttrString((PyObject*)self,
+    if(PyObject_SetAttrString((PyObject*)self,
           "special", special)) {
       return -1;
     }
@@ -625,12 +646,12 @@ Gk_Move_init(Gk_Move * self, PyObject * args, PyObject * kwds) {
     "piece", "pos", "direction", "capture",
     "capture_piece", "capture_pos", NULL };
 
-  PyObject * piece;
-  PyObject * pos;
-  PyObject * direction;
-  PyObject * capture;
-  PyObject * capture_piece;
-  PyObject * capture_pos;
+  PyObject * piece = NULL;
+  PyObject * pos = NULL;
+  PyObject * direction = NULL;
+  PyObject * capture = NULL;
+  PyObject * capture_piece = NULL;
+  PyObject * capture_pos = NULL;
 
   if(!PyArg_ParseTupleAndKeywords(
         args, kwds, "|OOOOOO", kwd_names,
@@ -640,42 +661,42 @@ Gk_Move_init(Gk_Move * self, PyObject * args, PyObject * kwds) {
   }
 
   if(piece) {
-    if(!PyObject_SetAttrString((PyObject*)self,
+    if(PyObject_SetAttrString((PyObject*)self,
           "piece", piece)) {
       return -1;
     }
   }
     
   if(pos) {
-    if(!PyObject_SetAttrString((PyObject*)self,
+    if(PyObject_SetAttrString((PyObject*)self,
           "pos", pos)) {
       return -1;
     }
   }
     
   if(direction) {
-    if(!PyObject_SetAttrString((PyObject*)self,
+    if(PyObject_SetAttrString((PyObject*)self,
           "direction", direction)) {
       return -1;
     }
   }
     
   if(capture) {
-    if(!PyObject_SetAttrString((PyObject*)self,
+    if(PyObject_SetAttrString((PyObject*)self,
           "capture", capture)) {
       return -1;
     }
   }
     
   if(capture_piece) {
-    if(!PyObject_SetAttrString((PyObject*)self,
+    if(PyObject_SetAttrString((PyObject*)self,
           "capture_piece", capture_piece)) {
       return -1;
     }
   }
     
   if(capture_pos) {
-    if(!PyObject_SetAttrString((PyObject*)self,
+    if(PyObject_SetAttrString((PyObject*)self,
           "capture_pos", capture_pos)) {
       return -1;
     }
@@ -724,7 +745,7 @@ Gk_MoveIter_init(Gk_MoveIter * self, PyObject * args, PyObject * kwds) {
   
   static char * kwd_names[] = { "state", NULL };
 
-  Gk_State * state;
+  Gk_State * state = NULL;
 
   if(!PyArg_ParseTupleAndKeywords(
         args, kwds, "O!", kwd_names,
