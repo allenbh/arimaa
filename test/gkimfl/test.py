@@ -25,6 +25,28 @@ def stateOfficialTwo(player_color):
       color = player_color,
       )
 
+def stateOfficialEight(player_color):
+  '''Official move generator input eight
+     -----------------
+  8 |                 |
+  7 |                 |
+  6 |                 |
+  5 |                 |
+  4 |                 |
+  3 |   R             |
+  2 |   e E   e       |
+  1 |     e e         |
+     -----------------
+      a b c d e f g h
+  '''
+  syms = (
+      '                                ' +
+      '         R       eE e     ee    ' )
+  return g.state(
+      pieces = map(m.sym_piece, syms),
+      color = player_color,
+      )
+                                  
 def stateA(player_color):
   '''State A
      -----------------
@@ -47,10 +69,24 @@ def stateA(player_color):
       color = player_color,
       )
 
+def expand(state, depth=1, move_list=()):
+  if depth <= 0:
+    return
+  depth -= 1
+  for (move,child) in g.move_iter(state):
+    move = move_list + (move,)
+    yield (move,child)
+    yield from expand(child, depth, move)
+
+def turn_over(state):
+  return g.state(
+      pieces = state,
+      color = state.color^1)
+
 def test_step(self):
   state = self.state
   count = 0
-  for (m,s) in g.move_iter(state):
+  for (move,child) in expand(state):
     count += 1
   self.assertEqual(count, self.count)
 
@@ -58,37 +94,36 @@ def test_turn(self):
   state = self.state
   count = 0
   seen = set()
-  seen.add(state)
-  for (m1,s1) in g.move_iter(state):
-    if not s1.is_forced():
+  seen.add(turn_over(state))
+  for (move,child) in expand(state, 4):
+    if not child.is_forced():
       count += 1
-      seen.add(s1)
-    for (m2,s2) in g.move_iter(s1):
-      if not s2.is_forced():
-        count += 1
-        seen.add(s2)
-      for (m3,s3) in g.move_iter(s2):
-        if not s3.is_forced():
-          count += 1
-          seen.add(s3)
-        for (m4,s4) in g.move_iter(s3):
-          if not s4.is_forced():
-            count += 1
-            seen.add(s4)
-  seen.remove(state)
-  self.assertEqual(count, self.count)
+      seen.add(turn_over(child))
+  seen.discard(turn_over(state))
   self.assertEqual(len(seen), self.unique)
+  self.assertEqual(count, self.count)
 
-class TestInputOneStep(unittest.TestCase):
+class TestOfficialOneStep(unittest.TestCase):
   state = stateOfficialTwo(0)
   test = test_step
-  count = 123
+  count = 27
 
-class TestInputOneTurn(unittest.TestCase):
+class TestOfficialOneTurn(unittest.TestCase):
   state = stateOfficialTwo(0)
   test = test_turn
-  count = 204060
+  count = 204779
   unique = 15419
+
+class TestOfficialEightStep(unittest.TestCase):
+  state = stateOfficialEight(0)
+  test = test_step
+  count = 2
+
+class TestOfficialEightTurn(unittest.TestCase):
+  state = stateOfficialEight(0)
+  test = test_turn
+  count = 100
+  unique = 24
 
 class TestStepAGold(unittest.TestCase):
   state = stateA(0)

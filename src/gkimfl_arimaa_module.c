@@ -372,7 +372,7 @@ _Gk_State_setpieces(Gk_State * self, PyObject * val_obj) {
     return -1;
   }
 
-  while(piece = PyIter_Next(val_obj)) {
+  while(piece = PyIter_Next(iter)) {
 
     if(pos >= 64) {
       Py_DECREF(piece);

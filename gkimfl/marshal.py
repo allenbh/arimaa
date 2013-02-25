@@ -30,3 +30,21 @@ _col_sym = 'abcdefghABCDEFGH'
 col_sym = _val_to_sym(_col_sym, 8)
 sym_col = _sym_to_val(_col_sym, 8)
 
+_dir_sym = 'nsweNSWE'
+dir_sym = _val_to_sym(_dir_sym, 4)
+sym_dir = _sym_to_val(_dir_sym, 4)
+
+def move_repr(move):
+  rep = ''.join((
+      piece_sym(move.piece),
+      col_sym(move.pos % 8),
+      row_sym(move.pos // 8),
+      dir_sym(move.direction)))
+  if move.capture:
+    rep += ''.join((' ',
+        piece_sym(move.capture_piece),
+      col_sym(move.capture_pos % 8),
+      row_sym(move.capture_pos // 8),
+      'x'))
+  return rep
+

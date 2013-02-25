@@ -277,6 +277,10 @@ static inline void state_trans(
   int color = piece_color(move->piece);
   int rank = piece_rank(move->piece);
 
+  if(state->bit_special) {
+    state_bit_clear(state, state->bit_special);
+  }
+
   state->bit_special = bit_special;
   state->bit_present ^= bit_flip;
   bit_flip ^= bit_special;
