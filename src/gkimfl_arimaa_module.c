@@ -41,6 +41,9 @@ Gk_State_richcmp(Gk_State * self, Gk_State * other, int op);
 static PyObject *
 Gk_State_is_forced(Gk_State * self);
 
+static PyObject *
+Gk_State_expand(Gk_State * self);
+
 static int
 Gk_State_init(Gk_State * self, PyObject * args, PyObject * kwds);
 
@@ -62,6 +65,8 @@ static PyMethodDef
 Gk_State_methods[] = {
   { "is_forced", (PyCFunction)Gk_State_is_forced, METH_NOARGS,
     "Forced completion of a push move" },
+  { "expand", (PyCFunction)Gk_State_expand, METH_NOARGS,
+    "Return a move iterator on this state" },
   {0}
 };
 
@@ -526,6 +531,13 @@ Gk_State_is_forced(Gk_State * self) {
     Py_RETURN_TRUE;
   }
   Py_RETURN_FALSE;
+}
+
+static PyObject *
+Gk_State_expand(Gk_State * self) {
+  return PyObject_CallFunction(
+      (PyObject*)&Gk_MoveIter_type,
+      "O", (PyObject*)self);
 }
 
 static int
