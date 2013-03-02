@@ -1,7 +1,9 @@
 
 import unittest
-import gkimfl.arimaa as g
+import gkimfl.arimaa_impl as g
 import gkimfl.marshal as m
+
+print("here I am")
 
 def stateOfficialTwo(player_color):
   '''Official move generator input two

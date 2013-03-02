@@ -80,7 +80,7 @@ Gk_State_members[] = {
 static PyTypeObject
 Gk_State_type = {
   PyVarObject_HEAD_INIT(NULL, 0)
-  "arimaa.state",                      /* tp_name */
+  "arimaa_impl.state",                      /* tp_name */
   sizeof(Gk_State),                    /* tp_basicsize */
   0,                                   /* tp_itemsize */
   0,                                   /* tp_dealloc */
@@ -157,7 +157,7 @@ Gk_Move_members[] = {
 static PyTypeObject
 Gk_Move_type = {
   PyVarObject_HEAD_INIT(NULL, 0)
-  "arimaa.move",                       /* tp_name */
+  "arimaa_impl.move",                       /* tp_name */
   sizeof(Gk_Move),                     /* tp_basicsize */
   0,                                   /* tp_itemsize */
   0,                                   /* tp_dealloc */
@@ -214,7 +214,7 @@ Gk_MoveIter_init(Gk_MoveIter * self, PyObject * args, PyObject * kwds);
 static PyTypeObject
 Gk_MoveIter_type = {
   PyVarObject_HEAD_INIT(NULL, 0)
-  "arimaa.move_iter",                  /* tp_name */
+  "arimaa_impl.move_iter",                  /* tp_name */
   sizeof(Gk_MoveIter),                 /* tp_basicsize */
   0,                                   /* tp_itemsize */
   0,                                   /* tp_dealloc */
@@ -377,7 +377,7 @@ _Gk_State_setpieces(Gk_State * self, PyObject * val_obj) {
     return -1;
   }
 
-  while(piece = PyIter_Next(iter)) {
+  while((piece = PyIter_Next(iter))) {
 
     if(pos >= 64) {
       Py_DECREF(piece);
@@ -774,16 +774,16 @@ Gk_MoveIter_init(Gk_MoveIter * self, PyObject * args, PyObject * kwds) {
 /* Module                                                             */
 /* ------------------------------------------------------------------ */
 
-static PyModuleDef arimaa = {
+static PyModuleDef arimaa_impl = {
     PyModuleDef_HEAD_INIT,
-    "arimaa",
+    "arimaa_impl",
     "GkIMFL Arimaa fast move generator",
     -1,
     NULL, NULL, NULL, NULL, NULL
 };
 
 PyMODINIT_FUNC
-PyInit_arimaa(void) 
+PyInit_arimaa_impl(void) 
 {
     PyObject* m;
 
@@ -800,7 +800,7 @@ PyInit_arimaa(void)
     if (PyType_Ready(&Gk_MoveIter_type) < 0)
         return NULL;
 
-    m = PyModule_Create(&arimaa);
+    m = PyModule_Create(&arimaa_impl);
     if (m == NULL)
         return NULL;
 
