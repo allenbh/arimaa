@@ -35,6 +35,8 @@ dir_sym = _val_to_sym(_dir_sym, 4)
 sym_dir = _sym_to_val(_dir_sym, 4)
 
 def move_repr(move):
+  if(move is None):
+    return r'\n'
   rep = ''.join((
       piece_sym(move.piece),
       col_sym(move.pos % 8),
