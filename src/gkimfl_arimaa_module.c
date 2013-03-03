@@ -432,6 +432,7 @@ Gk_State_getattro(Gk_State * self, PyObject * attr_obj) {
   }
 
   if(!strcmp(attr_str, "pieces")) {
+    Py_INCREF(self);
     return (PyObject*)self;
   }
 
@@ -737,14 +738,14 @@ Gk_MoveIter_next(Gk_MoveIter * self) {
   if(!state)
     goto err_state;
   Py_INCREF(state);
-  
+
   has_next = moves_next(&self->ob_moves,
       &move->ob_move, &state->ob_state);
 
   if(has_next) {
     tuple = PyTuple_Pack(2, move, state);
   }
-    
+
   Py_DECREF(state);
 err_state:
   Py_DECREF(move);
