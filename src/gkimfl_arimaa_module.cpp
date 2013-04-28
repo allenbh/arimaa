@@ -9,7 +9,7 @@ using namespace gkimfl::arimaa_wrappers;
 BOOST_PYTHON_MODULE(arimaa_impl) {
 
   class_<wrap_state>("state", init<>())
-    .def(init<const wrap_state&>())
+    //.def(init<const wrap_state&>()) // init<const object&>() matches first
     .def(init<const object&>())
     .def(init<const object&, const object&>())
     .add_property("color",

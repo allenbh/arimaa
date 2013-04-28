@@ -74,7 +74,13 @@ wrap_state::wrap_state() :
 wrap_state::wrap_state(const object& pieces) :
   state(empty_state), hash(0)
 {
-  set_pieces(pieces);
+  extract<wrap_state> get_state(pieces);
+  if(get_state.check()) {
+    *this = get_state();
+  }
+  else {
+    set_pieces(pieces);
+  }
 }
 
 wrap_state::wrap_state(const object& pieces, const object& special) :
@@ -156,13 +162,13 @@ void wrap_state::set_piece(int pos, const object& piece_obj) {
   set_bit_piece(bit, (piece_t)piece);
 }
 
-void wrap_state::set_pieces(const object& pieces) {
-  object iter = call_method<object>(pieces.ptr(), "__iter__");
+void wrap_state::set_pieces(const object& pieces_obj) {
+  object iter_obj = object(handle<>(PyObject_GetIter(pieces_obj.ptr())));
   try {
     int pos = 0;
     while(true) {
-      object next = call_method<object>(iter.ptr(), "next");
-      set_piece(pos, next);
+      object piece_obj = object(handle<>(PyIter_Next(iter_obj.ptr())));
+      set_piece(pos, piece_obj);
       ++pos;
     }
     if(pos != 64) {
