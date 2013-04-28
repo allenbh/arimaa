@@ -29,9 +29,9 @@ struct wrap_state : public arimaa::state {
   int hash;
 
   wrap_state();
-  wrap_state(const std::vector<int>& pieces);
-  wrap_state(const std::vector<int>& pieces,
-      int special_piece, int special_pos);
+  wrap_state(const boost::python::object& pieces);
+  wrap_state(const boost::python::object& pieces,
+      const boost::python::object& special);
   wrap_state(const arimaa::state& state, int hash);
 
   int get_len() const { return 64; }
@@ -48,9 +48,13 @@ struct wrap_state : public arimaa::state {
   boost::python::object get_piece(int pos) const;
   void set_piece(int pos, const boost::python::object& special);
 
+  static boost::python::object
+    self_get_pieces(const boost::python::object& o) { return o; }
+  void set_pieces(const boost::python::object& pieces);
+
   wrap_step_list get_steps() const { return wrap_step_list(*this); }
 
-  bool is_forced();
+  bool is_forced() const;
 
   void turn_over();
 };

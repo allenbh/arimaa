@@ -94,6 +94,7 @@ static inline index_t trap_pos(index_t pos) {
     case 13: case 20: case 22: case 29: return 21;
     case 34: case 41: case 43: case 50: return 42;
     case 37: case 44: case 46: case 53: return 45;
+    default: ;
   }
   return 0;
 }
@@ -143,6 +144,7 @@ static inline bitboard_t bit_neighbors(bitboard_t bits, direction_t dir) {
     case SOUTH: return bit_south(bits);
     case WEST: return bit_west(bits);
     case EAST: return bit_east(bits);
+    default: ;
   }
   assert(false);
   return bits;
@@ -226,6 +228,25 @@ struct state {
   bitboard_t bit_color[COLOR_COUNT];
   bitboard_t bit_rank[RANK_COUNT];
 
+  bool operator == (const state& other) const {
+    if(player_color != other.player_color) return false;
+    if(bit_present != other.bit_present) return false;
+    if(bit_special != other.bit_special) return false;
+    if(bit_color[GOLD] != other.bit_color[GOLD]) return false;
+    if(bit_color[SILV] != other.bit_color[SILV]) return false;
+    if(bit_rank[RBT] != other.bit_rank[RBT]) return false;
+    if(bit_rank[CAT] != other.bit_rank[CAT]) return false;
+    if(bit_rank[DOG] != other.bit_rank[DOG]) return false;
+    if(bit_rank[HRS] != other.bit_rank[HRS]) return false;
+    if(bit_rank[CML] != other.bit_rank[CML]) return false;
+    if(bit_rank[ELF] != other.bit_rank[ELF]) return false;
+    return true;
+  }
+
+  bool operator != (const state& other) const {
+    return !(*this == other);
+  }
+
   // Find the presence of a bit
   bool get_bit_present(bitboard_t bit) const {
     assert(is_exactly_one_bit(bit));
@@ -289,6 +310,12 @@ struct state {
       clear_bits(bit);
     }
     put_bit_piece(bit, piece);
+  }
+
+  // Force a push completion if special is the enemy color
+  bool force_push_complete() const {
+    color_t enemy_color = color_opposite(player_color);
+    return bit_color[enemy_color] & bit_special;
   }
 
 };

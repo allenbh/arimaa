@@ -10,19 +10,23 @@ BOOST_PYTHON_MODULE(arimaa_impl) {
 
   class_<wrap_state>("state", init<>())
     .def(init<const wrap_state&>())
-    .def(init<const std::vector<int>&>())
-    .def(init<const std::vector<int>&, int, int>())
+    .def(init<const object&>())
+    .def(init<const object&, const object&>())
     .add_property("color",
         &wrap_state::get_color,
         &wrap_state::set_color)
     .add_property("special",
         &wrap_state::get_special,
         &wrap_state::set_special)
+    .add_property("pieces",
+        &wrap_state::self_get_pieces,
+        &wrap_state::set_pieces)
     .def("__eq__", &wrap_state::is_eq)
     .def("__len__", &wrap_state::get_len)
     .def("__hash__", &wrap_state::get_hash)
     .def("__getitem__", &wrap_state::get_piece)
     .def("__setitem__", &wrap_state::set_piece)
+    .def("get_steps", &wrap_state::get_steps)
     .def("get_steps", &wrap_state::get_steps)
     .def("turn_over", &wrap_state::turn_over)
     .def("is_forced", &wrap_state::is_forced)

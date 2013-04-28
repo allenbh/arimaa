@@ -1,5 +1,4 @@
 
-#define NDEBUG
 #include "gkimfl_arimaa.hpp"
 
 using namespace gkimfl::arimaa;
@@ -176,16 +175,6 @@ static inline void state_steps_normal(
   }
 }
 
-// Force a push completion if special is the enemy color
-static inline bool state_force_push_complete(
-    const state& state) {
-
-  color_t enemy_color = color_opposite(state.player_color);
-
-  return ((bitboard_t)0) !=
-    (state.bit_color[enemy_color] & state.bit_special);
-}
-
 // Compute steps from a parent state
 static inline void state_steps(
     const state& state,
@@ -193,7 +182,7 @@ static inline void state_steps(
 
   steps.parent = state;
 
-  if ( state_force_push_complete(state) ) {
+  if ( state.force_push_complete() ) {
     state_steps_push_complete(state, steps);
   }
   else {
