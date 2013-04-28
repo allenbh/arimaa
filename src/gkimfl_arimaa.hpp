@@ -11,7 +11,7 @@
 #error "This implementation requires a 64 bit integer type"
 #endif
 
-namespace gkimfl_arimaa {
+namespace gkimfl { namespace arimaa {
 
 enum color_t { GOLD, SILV, COLOR_COUNT };
 enum rank_t { RBT, CAT, DOG, HRS, CML, ELF, RANK_COUNT };
@@ -187,7 +187,7 @@ static inline bitboard_t bits_threatened(
 }
 
 // Compute bits threatened by other bits in one direction
-bitboard_t bits_dir_threatened(
+static inline bitboard_t bits_dir_threatened(
     bitboard_t bits,
     bitboard_t threats,
     const bitboard_t ranks[],
@@ -205,7 +205,7 @@ bitboard_t bits_dir_threatened(
 }
 
 // Compute bits that are not frozen by other bits
-bitboard_t bits_not_frozen(
+static inline bitboard_t bits_not_frozen(
     bitboard_t bits,
     bitboard_t threats,
     const bitboard_t ranks[]) {
@@ -315,16 +315,15 @@ struct step_list {
   struct bits_type {
     bitboard_t bit_mobile;
     bitboard_t bit_special;
-  };
-
+  } bits[DIRECTION_COUNT];
+  
   int direction;
-  struct state parent;
-  struct bits_type bits[DIRECTION_COUNT];
+  state parent;
 
   step_list(const state& parent);
   bool get_next(next_type & next);
 };
 
-} // namespace gkimfl_arimaa
+} } // namespace gkimfl::arimaa
 
 #endif // gkimfl_arimaa_hpp

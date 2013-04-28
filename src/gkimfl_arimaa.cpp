@@ -2,7 +2,7 @@
 #define NDEBUG
 #include "gkimfl_arimaa.hpp"
 
-using namespace gkimfl_arimaa;
+using namespace gkimfl::arimaa;
 
 // Single trap capture function
 static inline void state_capt(
