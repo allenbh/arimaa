@@ -1,6 +1,5 @@
 
 #include <boost/python.hpp>
-#include <boost/python/iterator.hpp>
 #include "gkimfl_arimaa_wrappers.hpp"
 
 using namespace std;
@@ -49,6 +48,10 @@ wrap_step::wrap_step(const step& _step) :
 {
 }
 
+long wrap_step::get_hash() const {
+  return 0;
+}
+
 wrap_step_list::wrap_step_list(const wrap_state& state) :
   step_list(state)
 {
@@ -93,6 +96,10 @@ wrap_state::wrap_state(const object& pieces, const object& special) :
 wrap_state::wrap_state(const state& _state, int _hash) :
   state(_state), hash(_hash)
 {
+}
+
+long wrap_state::get_hash() const {
+  return 0;
 }
 
 bool wrap_state::is_eq(const wrap_state& other) {

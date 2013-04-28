@@ -34,13 +34,14 @@ BOOST_PYTHON_MODULE(arimaa_impl) {
 
   class_<wrap_step>("step", init<>())
     .def(init<const wrap_step&>())
-    .def_readwrite("piece", &wrap_step::piece)
-    .def_readwrite("pos", &wrap_step::pos)
-    .def_readwrite("direction", &wrap_step::direction)
-    .def_readwrite("is_special", &wrap_step::special)
-    .def_readwrite("is_capture", &wrap_step::capture)
-    .def_readwrite("capture_piece", &wrap_step::capture_piece)
-    .def_readwrite("capture_pos", &wrap_step::capture_pos)
+    .def_readwrite("piece", (int wrap_step::*)&wrap_step::piece)
+    .def_readwrite("pos", (int wrap_step::*)&wrap_step::pos)
+    .def_readwrite("direction", (int wrap_step::*)&wrap_step::direction)
+    .def_readwrite("is_special", (int wrap_step::*)&wrap_step::special)
+    .def_readwrite("is_capture", (int wrap_step::*)&wrap_step::capture)
+    .def_readwrite("capture_piece", (int wrap_step::*)&wrap_step::capture_piece)
+    .def_readwrite("capture_pos", (int wrap_step::*)&wrap_step::capture_pos)
+    .def("__hash__", &wrap_step::get_hash)
     ;
 
   class_<wrap_step_list>("step_list", init<const wrap_state&>())

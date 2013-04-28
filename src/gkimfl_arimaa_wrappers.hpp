@@ -14,6 +14,8 @@ struct wrap_state;
 struct wrap_step : public arimaa::step {
   wrap_step();
   wrap_step(const arimaa::step& step);
+
+  long get_hash() const;
 };
 
 struct wrap_step_list : public arimaa::step_list {
@@ -35,7 +37,7 @@ struct wrap_state : public arimaa::state {
   wrap_state(const arimaa::state& state, int hash);
 
   int get_len() const { return 64; }
-  int get_hash() const { return hash; }
+  long get_hash() const;
 
   bool is_eq(const wrap_state& other);
 
