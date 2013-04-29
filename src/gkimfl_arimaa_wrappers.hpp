@@ -30,13 +30,13 @@ struct wrap_step_list : public arimaa::step_list {
 };
 
 struct wrap_state : public arimaa::state {
-  int hash;
+  long hash;
 
   wrap_state();
   wrap_state(const boost::python::object& pieces);
   wrap_state(const boost::python::object& pieces,
       const boost::python::object& special);
-  wrap_state(const arimaa::state& state, int hash);
+  wrap_state(const arimaa::state& state, long hash);
 
   int get_len() const { return 64; }
   long get_hash() const;

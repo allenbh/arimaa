@@ -75,7 +75,7 @@ object wrap_step_list::next() {
 
   wrap_step step(next.first);
 
-  int hash = parent_hash;
+  long hash = parent_hash;
   if(step.special) {
     hash ^= hash_special((int)step.pos);
   }
@@ -124,7 +124,7 @@ wrap_state::wrap_state(const object& pieces, const object& special) :
   set_special(special);
 }
 
-wrap_state::wrap_state(const state& _state, int _hash) :
+wrap_state::wrap_state(const state& _state, long _hash) :
   state(_state), hash(_hash)
 {
 }
@@ -164,7 +164,7 @@ void wrap_state::set_special(const object& special_obj) {
     if(bit_special) {
       int cur_piece = (int)get_bit_piece(bit_special);
       int cur_pos = (int)bit_pos(bit_special);
-      hash ^= hash_piece(cur_pos, cur_piece);
+      hash ^= hash_piece(cur_piece, cur_pos);
       clear_bit_piece(bit_special, (piece_t)cur_piece);
     }
   }
@@ -178,13 +178,13 @@ void wrap_state::set_special(const object& special_obj) {
     bitboard_t bit = pos_bit((index_t)pos);
     if(bit & (bit_present|bit_special)) {
       int cur_piece = (int)get_bit_piece(bit);
-      hash ^= hash_piece(pos, cur_piece);
+      hash ^= hash_piece(cur_piece, pos);
       if(bit & bit_special) {
         hash ^= hash_special(pos);
       }
       clear_bit_piece(bit, (piece_t)cur_piece);
     }
-    hash ^= hash_piece(pos, piece);
+    hash ^= hash_piece(piece, pos);
     hash ^= hash_special(pos);
     put_bit_piece(bit, (piece_t)piece);
     bit_special = bit;
@@ -201,28 +201,45 @@ object wrap_state::get_piece(int pos) const {
   return object();
 }
 
+#include <iostream>
+
 void wrap_state::set_piece(int pos, const object& piece_obj) {
   validate_pos(pos);
   bitboard_t bit = pos_bit((index_t)pos);
   if(piece_obj.is_none()) {
+    cout << "clear" << endl;
+    cout << hash << endl;
     if(bit & bit_present) {
+      cout << "something" << endl;
       int piece = (int)get_bit_piece(bit);
-      hash ^= hash_piece(pos, piece);
+      hash ^= hash_piece(piece, pos);
+      cout << hash_piece(piece, pos) << endl;
+      cout << hash << endl;
       clear_bit_piece(bit, (piece_t)piece);
     }
   }
   else {
+    cout << "set" << endl;
+    cout << hash << endl;
     int piece = extract<int>(piece_obj);
     validate_piece(piece);
     if(bit & (bit_present|bit_special)) {
+      cout << "something" << endl;
       int cur_piece = (int)get_bit_piece(bit);
-      hash ^= hash_piece(pos, cur_piece);
+      hash ^= hash_piece(cur_piece, pos);
+      cout << hash_piece(cur_piece, pos) << endl;
+      cout << hash << endl;
       if(bit & bit_special) {
+        cout << "special" << endl;
         hash ^= hash_special(pos);
+        cout << hash_special(pos) << endl;
+        cout << hash << endl;
       }
       clear_bit_piece(bit, (piece_t)cur_piece);
     }
-    hash ^= hash_piece(pos, piece);
+    hash ^= hash_piece(piece, pos);
+    cout << hash_piece(piece, pos) << endl;
+    cout << hash << endl;
     put_bit_piece(bit, (piece_t)piece);
   }
 }
@@ -258,7 +275,8 @@ void wrap_state::turn_over() {
   hash = ~hash;
   if(bit_special) {
     int piece = (int)get_bit_piece(bit_special);
-    hash ^= hash_piece(bit_special, piece);
+    int pos = (int)bit_pos(bit_special);
+    hash ^= hash_piece(piece, pos);
     hash ^= hash_special(bit_special);
     clear_bit_piece(bit_special, (piece_t)piece);
   }

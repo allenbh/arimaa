@@ -295,10 +295,10 @@ struct state {
     bit = ~bit;
     color_t color = piece_color(piece);
     rank_t rank = piece_rank(piece);
-    bit_present |= bit;
-    bit_special |= bit;
-    bit_color[color] |= bit;
-    bit_rank[rank] |= bit;
+    bit_present &= bit;
+    bit_special &= bit;
+    bit_color[color] &= bit;
+    bit_rank[rank] &= bit;
   }
 
   // Clear pieces from the board

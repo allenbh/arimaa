@@ -2,6 +2,7 @@
 
 namespace {
   static const unsigned long _special[] = {
+    // 64 random numbers
     0x9f47c91dc1124820l, 0xe8a51dc9da09e98al,
     0x98c2610b7e340806l, 0x498afff34af88f7el,
     0x02224732e51ec455l, 0x11eaa07db4a1ad49l,
@@ -37,6 +38,7 @@ namespace {
   };
 
   static const unsigned long _piece[] = {
+    // 12 * 64 random numbers
     0xf53ea23eaba76a33l, 0xbcaf3f64608b7248l,
     0xe7a88573993c7501l, 0x684b80f5b8ceca02l,
     0x53f24d4bc93cc4e6l, 0xef4f423a27013d66l,
