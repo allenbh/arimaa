@@ -16,8 +16,9 @@ setup (
         'gkimfl.arimaa_impl',
         sources = [
           'src/gkimfl_arimaa.cpp',
-          'src/gkimfl_arimaa_wrappers.cpp',
+          'src/gkimfl_arimaa_hash.cpp',
           'src/gkimfl_arimaa_module.cpp',
+          'src/gkimfl_arimaa_wrappers.cpp',
           ],
         include_dirs = [ 'src' ],
         libraries = [ 'boost_python' ],

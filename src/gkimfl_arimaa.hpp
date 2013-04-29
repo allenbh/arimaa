@@ -289,6 +289,18 @@ struct state {
     bit_rank[rank] |= bit;
   }
 
+  // Put a piece on the board
+  void clear_bit_piece(bitboard_t bit, piece_t piece) {
+    assert(is_exactly_one_bit(bit));
+    bit = ~bit;
+    color_t color = piece_color(piece);
+    rank_t rank = piece_rank(piece);
+    bit_present |= bit;
+    bit_special |= bit;
+    bit_color[color] |= bit;
+    bit_rank[rank] |= bit;
+  }
+
   // Clear pieces from the board
   void clear_bits(bitboard_t bits) {
     bits = ~bits;
@@ -302,14 +314,6 @@ struct state {
     bit_rank[HRS] &= bits;
     bit_rank[CML] &= bits;
     bit_rank[ELF] &= bits;
-  }
-
-  // Put a piece on the board, clearing an already present piece
-  void set_bit_piece(bitboard_t bit, piece_t piece) {
-    if(get_bit_present(bit)) {
-      clear_bits(bit);
-    }
-    put_bit_piece(bit, piece);
   }
 
   // Force a push completion if special is the enemy color

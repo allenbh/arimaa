@@ -19,6 +19,8 @@ struct wrap_step : public arimaa::step {
 };
 
 struct wrap_step_list : public arimaa::step_list {
+  long parent_hash;
+
   wrap_step_list(const wrap_state& state);
 
   static boost::python::object
