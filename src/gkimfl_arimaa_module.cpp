@@ -26,10 +26,9 @@ BOOST_PYTHON_MODULE(arimaa_impl) {
     .def("__hash__", &wrap_state::get_hash)
     .def("__getitem__", &wrap_state::get_piece)
     .def("__setitem__", &wrap_state::set_piece)
-    .def("get_steps", &wrap_state::get_steps)
-    .def("get_steps", &wrap_state::get_steps)
-    .def("turn_over", &wrap_state::turn_over)
+    .def("expand", &wrap_state::get_steps)
     .def("is_forced", &wrap_state::is_forced)
+    .def("turn_over", &wrap_state::turn_over)
     ;
 
   class_<wrap_step>("step", init<>())

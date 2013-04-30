@@ -181,6 +181,7 @@ static inline void state_steps(
     step_list& steps) {
 
   steps.parent = state;
+  steps.direction = (direction_t)0;
 
   if ( state.force_push_complete() ) {
     state_steps_push_complete(state, steps);

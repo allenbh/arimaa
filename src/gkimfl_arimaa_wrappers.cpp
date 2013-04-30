@@ -97,7 +97,13 @@ object wrap_step_list::next() {
 
   wrap_state state(next.second, hash);
 
-  return make_tuple(step, state);
+  object state_obj(state);
+
+  object step_obj(step);
+
+  tuple trans(make_tuple(step_obj, state_obj));
+
+  return trans;
 }
 
 wrap_state::wrap_state() :
@@ -165,6 +171,7 @@ void wrap_state::set_special(const object& special_obj) {
       int cur_piece = (int)get_bit_piece(bit_special);
       int cur_pos = (int)bit_pos(bit_special);
       hash ^= hash_piece(cur_piece, cur_pos);
+      hash ^= hash_special(cur_pos);
       clear_bit_piece(bit_special, (piece_t)cur_piece);
     }
   }
@@ -176,13 +183,17 @@ void wrap_state::set_special(const object& special_obj) {
     int pos = extract<int>(special[1]);
     validate_pos(pos);
     bitboard_t bit = pos_bit((index_t)pos);
-    if(bit & (bit_present|bit_special)) {
+    if(bit & bit_present) {
       int cur_piece = (int)get_bit_piece(bit);
       hash ^= hash_piece(cur_piece, pos);
-      if(bit & bit_special) {
-        hash ^= hash_special(pos);
-      }
       clear_bit_piece(bit, (piece_t)cur_piece);
+    }
+    if(bit_special) {
+      int cur_piece = (int)get_bit_piece(bit_special);
+      int cur_pos = (int)bit_pos(bit_special);
+      hash ^= hash_piece(cur_piece, cur_pos);
+      hash ^= hash_special(cur_pos);
+      clear_bit_piece(bit_special, (piece_t)cur_piece);
     }
     hash ^= hash_piece(piece, pos);
     hash ^= hash_special(pos);
@@ -201,68 +212,44 @@ object wrap_state::get_piece(int pos) const {
   return object();
 }
 
-#include <iostream>
-
 void wrap_state::set_piece(int pos, const object& piece_obj) {
   validate_pos(pos);
   bitboard_t bit = pos_bit((index_t)pos);
   if(piece_obj.is_none()) {
-    cout << "clear" << endl;
-    cout << hash << endl;
     if(bit & bit_present) {
-      cout << "something" << endl;
       int piece = (int)get_bit_piece(bit);
       hash ^= hash_piece(piece, pos);
-      cout << hash_piece(piece, pos) << endl;
-      cout << hash << endl;
       clear_bit_piece(bit, (piece_t)piece);
     }
   }
   else {
-    cout << "set" << endl;
-    cout << hash << endl;
     int piece = extract<int>(piece_obj);
     validate_piece(piece);
     if(bit & (bit_present|bit_special)) {
-      cout << "something" << endl;
       int cur_piece = (int)get_bit_piece(bit);
       hash ^= hash_piece(cur_piece, pos);
-      cout << hash_piece(cur_piece, pos) << endl;
-      cout << hash << endl;
       if(bit & bit_special) {
-        cout << "special" << endl;
         hash ^= hash_special(pos);
-        cout << hash_special(pos) << endl;
-        cout << hash << endl;
       }
       clear_bit_piece(bit, (piece_t)cur_piece);
     }
     hash ^= hash_piece(piece, pos);
-    cout << hash_piece(piece, pos) << endl;
-    cout << hash << endl;
     put_bit_piece(bit, (piece_t)piece);
   }
 }
 
 void wrap_state::set_pieces(const object& pieces_obj) {
   object iter_obj = object(handle<>(PyObject_GetIter(pieces_obj.ptr())));
-  try {
-    int pos = 0;
-    while(true) {
-      object piece_obj = object(handle<>(PyIter_Next(iter_obj.ptr())));
-      set_piece(pos, piece_obj);
-      ++pos;
-    }
-    if(pos != 64) {
-      PyErr_SetNone(PyExc_IndexError);
-      throw_error_already_set();
-    }
+  int pos = 0;
+  PyObject* piece_ptr;
+  while(piece_ptr = PyIter_Next(iter_obj.ptr())) {
+    object piece_obj = object(handle<>(piece_ptr));
+    set_piece(pos, piece_obj);
+    ++pos;
   }
-  catch(const error_already_set& e) {
-    if(!PyErr_ExceptionMatches(PyExc_StopIteration)) {
-      throw;
-    }
-    PyErr_Clear();
+  if(pos != 64) {
+    PyErr_SetNone(PyExc_IndexError);
+    throw_error_already_set();
   }
 }
 
@@ -277,7 +264,7 @@ void wrap_state::turn_over() {
     int piece = (int)get_bit_piece(bit_special);
     int pos = (int)bit_pos(bit_special);
     hash ^= hash_piece(piece, pos);
-    hash ^= hash_special(bit_special);
+    hash ^= hash_special(pos);
     clear_bit_piece(bit_special, (piece_t)piece);
   }
 }
