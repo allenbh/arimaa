@@ -41,17 +41,17 @@ static inline void validate_pair(const tuple& pair) {
 }
 
 wrap_step::wrap_step() :
-  step(empty_step)
+  step(empty_step), hash(0)
 {
 }
 
-wrap_step::wrap_step(const step& _step) :
-  step(_step)
+wrap_step::wrap_step(const step& _step, long _hash) :
+  step(_step), hash(_hash)
 {
 }
 
 long wrap_step::get_hash() const {
-  return 0;
+  return hash;
 }
 
 wrap_step_list::wrap_step_list(const wrap_state& state) :
@@ -73,9 +73,11 @@ object wrap_step_list::next() {
     throw_error_already_set();
   }
 
-  wrap_step step(next.first);
+  step& step(next.first);
+  state& state(next.second);
 
-  long hash = parent_hash;
+  long hash = 0;
+
   if(step.special) {
     hash ^= hash_special((int)step.pos);
   }
@@ -95,15 +97,10 @@ object wrap_step_list::next() {
     hash ^= hash_piece((int)step.capture_piece, (int)step.capture_pos);
   }
 
-  wrap_state state(next.second, hash);
+  object step_obj(wrap_step(step, hash));
+  object state_obj(wrap_state(state, hash ^ parent_hash));
 
-  object state_obj(state);
-
-  object step_obj(step);
-
-  tuple trans(make_tuple(step_obj, state_obj));
-
-  return trans;
+  return make_tuple(step_obj, state_obj);
 }
 
 wrap_state::wrap_state() :

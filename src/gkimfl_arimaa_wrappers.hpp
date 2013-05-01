@@ -12,8 +12,10 @@ namespace gkimfl { namespace arimaa_wrappers {
 struct wrap_state;
 
 struct wrap_step : public arimaa::step {
+  long hash;
+
   wrap_step();
-  wrap_step(const arimaa::step& step);
+  wrap_step(const arimaa::step& step, long hash);
 
   long get_hash() const;
 };
