@@ -117,7 +117,6 @@ class test_expand(unittest.TestCase):
         ' rc  c  r r rr      H d      MHr'+
         'DdRr   h    e  rR C   ER  RRRRm ')
     s = arimaa_impl.state(p)
-    print(list(s))
     e = list(s.expand())
     self.assertEqual(len(e), 27)
 
@@ -126,7 +125,6 @@ class test_expand(unittest.TestCase):
         '                                '+
         '         R       eE e     ee    ')
     s = arimaa_impl.state(p)
-    print(list(s))
     e = list(s.expand())
     self.assertEqual(len(e), 2)
 
