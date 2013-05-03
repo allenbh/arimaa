@@ -1,7 +1,7 @@
 
 import unittest
 from gkimfl import arimaa
-from gkimfl import pretty as arimaa_pretty
+from gkimfl import arimaa_pretty
 
 class test_expand(unittest.TestCase):
 
