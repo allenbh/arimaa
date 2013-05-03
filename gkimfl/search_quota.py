@@ -20,9 +20,13 @@ class search(object):
     self.population = 1
 
   def expand_best(self):
+    pop = self.population
     self.root.expand()
+    print('expanded:', self.population - pop)
+    pop = self.population
     while self.population > self.quota:
       self.root.contract()
+    print('contracted:', self.population - pop)
 
   def is_trivial_best(self):
     return len(self.root.best) == 1
@@ -89,7 +93,10 @@ def _node_expand(self):
     self.worst_val = self.worst.first().worst_val
 
 def _node_contract(self):
-  worst_node = self.worst.first() # may throw IndexError
+  try:
+    worst_node = self.worst.first() # may throw IndexError
+  except AttributeError:
+    raise IndexError # fake empty when no self.worst
   try:
     worst_node.contract()
     self.best.bump(worst_node)
