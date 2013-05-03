@@ -228,6 +228,8 @@ struct state {
   bitboard_t bit_color[COLOR_COUNT];
   bitboard_t bit_rank[RANK_COUNT];
 
+  state() {}
+
   bool operator == (const state& other) const {
     if(player_color != other.player_color) return false;
     if(bit_present != other.bit_present) return false;
@@ -337,6 +339,8 @@ struct step {
   bool capture;
   piece_t capture_piece;
   index_t capture_pos;
+
+  step() {}
 };
 
 // Iterable steps from a parent state
@@ -351,6 +355,7 @@ struct step_list {
   int direction;
   state parent;
 
+  step_list() {}
   step_list(const state& parent);
   bool get_next(next_type & next);
 };

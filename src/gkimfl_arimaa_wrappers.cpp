@@ -9,8 +9,10 @@ using namespace gkimfl::arimaa;
 using namespace gkimfl::arimaa_hash;
 using namespace gkimfl::arimaa_wrappers;
 
-static const state empty_state = { };
-static const step empty_step = { };
+namespace {
+static const state empty_state;
+static const step empty_step;
+};
 
 static inline void validate_piece(int piece) {
   if(piece < 0 || PIECE_COUNT <= piece) {

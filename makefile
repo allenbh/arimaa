@@ -2,29 +2,36 @@
 .SILENT: test_python test_native
 .IGNORE: test_python test_native clean
 
-PYTHON := python3.3
+PYTHON := python
 
 SRC_DIR := $(CURDIR)/src
-TEST_DIR := $(CURDIR)/test/src
+SRC_TESTS := $(SRC_DIR)/test_gkimfl_arimaa
 
-MAKE_TEST = make -C "$(TEST_DIR)" SRC_DIR="$(SRC_DIR)"
+CXXFLAGS += -g -I"$(SRC_DIR)"
 
 all: build
+build: build_python
+test: test_python test_native
+clean: clean_python clean_native
 
-build:
+build_python:
 	$(PYTHON) setup.py build
 
-clean:
+clean_python:
 	$(PYTHON) setup.py clean --all
-	$(MAKE_TEST) clean
 
-test: test_python test_native
+clean_native:
+	rm -f $(SRC_TESTS)
 
-test_python:
+
+test_python: build
 	echo "Running python tests..."
-	$(PYTHON) setup.py build test
+	$(PYTHON) -m unittest discover -s tests
 
-test_native:
+test_native: $(SRC_TESTS)
 	echo "Running native tests..."
-	$(MAKE_TEST) test
+	for T in $^; do "$$T"; done
+
+$(SRC_DIR)/test_gkimfl_arimaa: $(SRC_DIR)/test_gkimfl_arimaa.cpp
+$(SRC_DIR)/test_gkimfl_arimaa: $(SRC_DIR)/gkimfl_arimaa.hpp
 
