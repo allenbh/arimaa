@@ -34,11 +34,6 @@ class heap(object):
     if get_pos is not _no_get_pos and set_pos is _no_get_pos:
       raise ValueError('get_pos is invalid without set_pos')
 
-    if items is not None:
-      self._heap = list(items)
-    else:
-      self._heap = []
-
     self._comp = comp
     self._get_pos = get_pos
 
@@ -54,8 +49,12 @@ class heap(object):
       else:
         self._set_pos = lambda wrapped, pos: set_pos(wrapped[1], pos)
 
-    heap_alg.heapify(self._heap,
-      comp=self._comp, set_pos=self._set_pos)
+    if items is None:
+      self._heap = []
+    else:
+      self._heap = list(map(self._wrap, items))
+      heap_alg.heapify(self._heap,
+          comp=self._comp, set_pos=self._set_pos)
 
   def __len__(self):
     '''Return the number of items in the heap.'''

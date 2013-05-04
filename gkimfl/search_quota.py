@@ -1,4 +1,5 @@
 
+import time
 from gkimfl import heap
 from operator import le, ge
 
@@ -21,12 +22,18 @@ class search(object):
 
   def expand_best(self):
     pop = self.population
+    tim = time.time()
     self.root.expand()
-    print('expanded:', self.population - pop)
+    tim = time.time() - tim
+    pop = self.population - pop
+    print('expanded %6d   in %6.4f sec   %6.0f per sec'%(pop, tim, pop/tim))
     pop = self.population
+    tim = time.time()
     while self.population > self.quota:
       self.root.contract()
-    print('contracted:', self.population - pop)
+    tim = time.time() - tim
+    pop = pop - self.population
+    print('contract %6d   in %6.4f sec   %6.0f per sec'%(pop, tim, pop/tim))
 
   def is_trivial_best(self):
     return len(self.root.best) == 1
@@ -72,16 +79,17 @@ def _node__init__(self, state, trans=None):
 
 def _node_expand(self):
   if not self.expanded:
-    comp_best, comp_worst = _comp_best_worst(self.state.color)
-    self.best = heap.heap(comp=comp_best, key=_get_best_val,
-        get_pos=_get_best_pos, set_pos=_set_best_pos)
-    self.worst = heap.heap(comp=comp_worst, key=_get_worst_val,
-        get_pos=_get_worst_pos, set_pos=_set_worst_pos)
+    children = []
     for trans, child in self.search.expand(self.state):
-      child_node = self.search.node(child, trans)
-      self.best.insert(child_node)
-      self.worst.insert(child_node)
-      self.search.population += 1
+      children.append(self.search.node(child, trans))
+    self.search.population += len(children)
+    comp_best, comp_worst = _comp_best_worst(self.state.color)
+    self.best = heap.heap(items=children,
+        comp=comp_best, key=_get_best_val,
+        get_pos=_get_best_pos, set_pos=_set_best_pos)
+    self.worst = heap.heap(items=children,
+        comp=comp_worst, key=_get_worst_val,
+        get_pos=_get_worst_pos, set_pos=_set_worst_pos)
     self.expanded = True
   else:
     best_node = self.best.first()

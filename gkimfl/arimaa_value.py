@@ -32,6 +32,12 @@ def material_value(state):
   rank_values = _rank_values(gold_counts, silv_counts)
   return _ranks_value(rank_values)
 
+def rabbit_value(state):
+  counts = _piece_counts(state)
+  gold_counts = _rank_counts(counts, GOLD)
+  silv_counts = _rank_counts(counts, SILV)
+  return _rank_value(gold_counts[RBT], silv_counts[RBT])
+
 def _threats(threat_counts, threatened_counts):
   value = 0
   count = 0
@@ -87,8 +93,10 @@ def _weighted_linear(*weighted_evals):
   return evaluate
 
 evaluate = _weighted_linear(
-    (1.0, material_value),
+    (1.0, rabbit_value),
+    #(1.0, material_value),
+    #(1.0, mobility_value),
     (0.7, threats_value),
-    (0.3, efficiency_value),
+    #(0.3, efficiency_value), # this one is expensive
     )
 
