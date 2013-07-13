@@ -111,12 +111,12 @@ int test_bit_neighbors_all() {
 /* Simple board tests                                                 */
 /* ------------------------------------------------------------------ */
 
-int test_state_put() {
+int test_state_bit_put() {
   struct state state = {0};
 
-  state_put(&state, 1, piece(SILV, CML));
-  state_put(&state, 2, piece(GOLD, CML));
-  state_put(&state, 4, piece(GOLD, ELF));
+  state_bit_put(&state, 1, piece(SILV, CML));
+  state_bit_put(&state, 2, piece(GOLD, CML));
+  state_bit_put(&state, 4, piece(GOLD, ELF));
 
   if( state.bit_present != 7 ) return 1;
   if( state.bit_color[SILV] != 1 ) return 2;
@@ -130,9 +130,9 @@ int test_state_put() {
 int test_state_bit_color() {
   struct state state = {0};
 
-  state_put(&state, 1, piece(SILV, CML));
-  state_put(&state, 2, piece(GOLD, CML));
-  state_put(&state, 4, piece(GOLD, ELF));
+  state_bit_put(&state, 1, piece(SILV, CML));
+  state_bit_put(&state, 2, piece(GOLD, CML));
+  state_bit_put(&state, 4, piece(GOLD, ELF));
 
   if( SILV != state_bit_color(&state, 1) ) return 1;
   if( GOLD != state_bit_color(&state, 2) ) return 2;
@@ -143,9 +143,9 @@ int test_state_bit_color() {
 int test_state_bit_rank() {
   struct state state = {0};
 
-  state_put(&state, 1, piece(SILV, CML));
-  state_put(&state, 2, piece(GOLD, CML));
-  state_put(&state, 4, piece(GOLD, ELF));
+  state_bit_put(&state, 1, piece(SILV, CML));
+  state_bit_put(&state, 2, piece(GOLD, CML));
+  state_bit_put(&state, 4, piece(GOLD, ELF));
 
   if( CML != state_bit_rank(&state, 1) ) return 1;
   if( CML != state_bit_rank(&state, 2) ) return 2;
@@ -156,9 +156,9 @@ int test_state_bit_rank() {
 int test_state_bit_piece() {
   struct state state = {0};
 
-  state_put(&state, 1, piece(SILV, CML));
-  state_put(&state, 2, piece(GOLD, CML));
-  state_put(&state, 4, piece(GOLD, ELF));
+  state_bit_put(&state, 1, piece(SILV, CML));
+  state_bit_put(&state, 2, piece(GOLD, CML));
+  state_bit_put(&state, 4, piece(GOLD, ELF));
 
   if( piece(SILV, CML) != state_bit_piece(&state, 1) ) return 1;
   if( piece(GOLD, CML) != state_bit_piece(&state, 2) ) return 2;
@@ -184,7 +184,7 @@ int test_state_capt__alone() {
   struct state state = {0};
   struct move move = {0};
 
-  state_put(&state, pos_bit(42), piece(GOLD, CML));
+  state_bit_put(&state, pos_bit(42), piece(GOLD, CML));
 
   state_capt(&state, &move, 42);
 
@@ -198,8 +198,8 @@ int test_state_capt__enemy_nearby() {
   struct state state = {0};
   struct move move = {0};
 
-  state_put(&state, pos_bit(42), piece(GOLD, CML));
-  state_put(&state, pos_bit(41), piece(SILV, ELF));
+  state_bit_put(&state, pos_bit(42), piece(GOLD, CML));
+  state_bit_put(&state, pos_bit(41), piece(SILV, ELF));
 
   state_capt(&state, &move, 42);
 
@@ -213,8 +213,8 @@ int test_state_capt__friend_nearby() {
   struct state state = {0};
   struct move move = {0};
 
-  state_put(&state, pos_bit(42), piece(GOLD, CML));
-  state_put(&state, pos_bit(41), piece(GOLD, RBT));
+  state_bit_put(&state, pos_bit(42), piece(GOLD, CML));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, RBT));
 
   state_capt(&state, &move, 42);
 
@@ -226,7 +226,7 @@ int test_state_trans__simple() {
   struct state state = {0};
   struct move move = {0};
 
-  state_put(&state, pos_bit(41), piece(GOLD, HRS));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, HRS));
 
   move.piece = piece(GOLD, HRS);
   move.pos = 41;
@@ -247,7 +247,7 @@ int test_state_trans__capture() {
   struct state state = {0};
   struct move move = {0};
 
-  state_put(&state, pos_bit(41), piece(GOLD, HRS));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, HRS));
 
   move.piece = piece(GOLD, HRS);
   move.pos = 41;
@@ -266,7 +266,7 @@ int test_state_trans__special() {
   struct state state = {0};
   struct move move = {0};
 
-  state_put(&state, pos_bit(41), piece(GOLD, HRS));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, HRS));
 
   move.piece = piece(GOLD, HRS);
   move.pos = 41;
@@ -305,7 +305,7 @@ int test_state_moves__simple() {
 
   state.player_color = GOLD;
 
-  state_put(&state, pos_bit(41), piece(GOLD, CAT));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, CAT));
 
   state_moves(&state, &moves);
 
@@ -322,7 +322,7 @@ int test_state_moves__gold_rabbit() {
 
   state.player_color = GOLD;
 
-  state_put(&state, pos_bit(41), piece(GOLD, RBT));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, RBT));
 
   state_moves(&state, &moves);
 
@@ -339,7 +339,7 @@ int test_state_moves__silv_rabbit() {
 
   state.player_color = SILV;
 
-  state_put(&state, pos_bit(41), piece(SILV, RBT));
+  state_bit_put(&state, pos_bit(41), piece(SILV, RBT));
 
   state_moves(&state, &moves);
 
@@ -356,8 +356,8 @@ int test_state_moves__frozen() {
 
   state.player_color = GOLD;
 
-  state_put(&state, pos_bit(41), piece(GOLD, CAT));
-  state_put(&state, pos_bit(40), piece(SILV, DOG));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, CAT));
+  state_bit_put(&state, pos_bit(40), piece(SILV, DOG));
 
   state_moves(&state, &moves);
 
@@ -374,9 +374,9 @@ int test_state_moves__protected() {
 
   state.player_color = GOLD;
 
-  state_put(&state, pos_bit(42), piece(GOLD, CAT));
-  state_put(&state, pos_bit(41), piece(GOLD, DOG));
-  state_put(&state, pos_bit(40), piece(SILV, HRS));
+  state_bit_put(&state, pos_bit(42), piece(GOLD, CAT));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, DOG));
+  state_bit_put(&state, pos_bit(40), piece(SILV, HRS));
 
   state_moves(&state, &moves);
 
@@ -395,8 +395,8 @@ int test_state_moves__special() {
 
   state.player_color = SILV;
 
-  state_put(&state, pos_bit(41), piece(GOLD, DOG));
-  state_put(&state, pos_bit(49), piece(SILV, HRS));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, DOG));
+  state_bit_put(&state, pos_bit(49), piece(SILV, HRS));
 
   state_moves(&state, &moves);
 
@@ -415,7 +415,7 @@ int test_state_moves__notspecial() {
 
   state.player_color = SILV;
 
-  state_put(&state, pos_bit(49), piece(SILV, HRS));
+  state_bit_put(&state, pos_bit(49), piece(SILV, HRS));
 
   state_moves(&state, &moves);
 
@@ -432,8 +432,8 @@ int test_state_moves__push() {
 
   state.player_color = SILV;
 
-  state_put(&state, pos_bit(41), piece(GOLD, CAT));
-  state_put(&state, pos_bit(40), piece(SILV, DOG));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, CAT));
+  state_bit_put(&state, pos_bit(40), piece(SILV, DOG));
 
   state_moves(&state, &moves);
 
@@ -449,9 +449,9 @@ int test_state_moves__push_complete() {
 
   state.player_color = SILV;
 
-  state_put(&state, pos_bit(41), piece(GOLD, CAT));
-  state_put(&state, pos_bit(40), piece(SILV, DOG));
-  state_put(&state, pos_bit(33), piece(SILV, CAT));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, CAT));
+  state_bit_put(&state, pos_bit(40), piece(SILV, DOG));
+  state_bit_put(&state, pos_bit(33), piece(SILV, CAT));
 
   state.bit_special ^= pos_bit(41);
   state.bit_present ^= pos_bit(41);
@@ -471,8 +471,8 @@ int test_state_moves__pull_complete() {
 
   state.player_color = SILV;
 
-  state_put(&state, pos_bit(41), piece(GOLD, CAT));
-  state_put(&state, pos_bit(40), piece(SILV, DOG));
+  state_bit_put(&state, pos_bit(41), piece(GOLD, CAT));
+  state_bit_put(&state, pos_bit(40), piece(SILV, DOG));
 
   state.bit_special ^= pos_bit(40);
   state.bit_present ^= pos_bit(40);
@@ -484,6 +484,30 @@ int test_state_moves__pull_complete() {
   if( 0 != moves.bits[SOUTH].bit_mobile ) return 3;
   if( 0 != moves.bits[EAST].bit_mobile ) return 4;
   if( 0 != moves.bits[WEST].bit_special ) return 5;
+  return 0;
+}
+
+int test_state_moves__parent() {
+  struct state state = {0};
+  struct moves moves = {0};
+
+  state.player_color = 1;
+  state.bit_present = 2;
+  state.bit_special = 3;
+  state.bit_color[GOLD] = 4;
+  state.bit_color[SILV] = 5;
+  state.bit_rank[RBT] = 6;
+  state.bit_rank[ELF] = 7;
+
+  state_moves(&state, &moves);
+
+  if( 1 != moves.parent.player_color ) return 1;
+  if( 2 != moves.parent.bit_present ) return 2;
+  if( 3 != moves.parent.bit_special ) return 3;
+  if( 4 != moves.parent.bit_color[GOLD] ) return 4;
+  if( 5 != moves.parent.bit_color[SILV] ) return 5;
+  if( 6 != moves.parent.bit_rank[RBT] ) return 6;
+  if( 7 != moves.parent.bit_rank[ELF] ) return 7;
   return 0;
 }
 
@@ -531,7 +555,7 @@ int test_moves_next__transition() {
   struct moves moves = {0};
   struct move move = {0};
 
-  state_put(&moves.parent, pos_bit(33), piece(GOLD, CML));
+  state_bit_put(&moves.parent, pos_bit(33), piece(GOLD, CML));
 
   moves.bits[SOUTH].bit_mobile = pos_bit(33);
 
@@ -562,27 +586,145 @@ int test_moves_next__stop_iteration() {
  * 6 |   E x     x     |
  * 5 | r C c R         |
  * 4 |     e           |
- * 3 | c D H     M     |
+ * 3 | c D H     x M   |
  * 2 |   d             |
  * 1 |                 |
  *    -----------------
  *     a b c d e f g h */
-void setup_state_A(struct state * state) {
-  state_put(state, pos_bit(2), piece(GOLD, DOG));
-  state_put(state, pos_bit(9), piece(SILV, HRS));
-  state_put(state, pos_bit(10), piece(SILV, DOG));
-  state_put(state, pos_bit(11), piece(GOLD, CAT));
-  state_put(state, pos_bit(17), piece(GOLD, ELF));
-  state_put(state, pos_bit(24), piece(SILV, RBT));
-  state_put(state, pos_bit(25), piece(GOLD, CAT));
-  state_put(state, pos_bit(26), piece(SILV, CAT));
-  state_put(state, pos_bit(27), piece(GOLD, RBT));
-  state_put(state, pos_bit(34), piece(SILV, ELF));
-  state_put(state, pos_bit(40), piece(SILV, CAT));
-  state_put(state, pos_bit(41), piece(GOLD, DOG));
-  state_put(state, pos_bit(42), piece(GOLD, HRS));
-  state_put(state, pos_bit(45), piece(GOLD, CML));
-  state_put(state, pos_bit(49), piece(SILV, DOG));
+void setup_smoke_A(struct state * state) {
+  state_bit_put(state, pos_bit(2), piece(GOLD, DOG));
+  state_bit_put(state, pos_bit(9), piece(SILV, HRS));
+  state_bit_put(state, pos_bit(10), piece(SILV, DOG));
+  state_bit_put(state, pos_bit(11), piece(GOLD, CAT));
+  state_bit_put(state, pos_bit(17), piece(GOLD, ELF));
+  state_bit_put(state, pos_bit(24), piece(SILV, RBT));
+  state_bit_put(state, pos_bit(25), piece(GOLD, CAT));
+  state_bit_put(state, pos_bit(26), piece(SILV, CAT));
+  state_bit_put(state, pos_bit(27), piece(GOLD, RBT));
+  state_bit_put(state, pos_bit(34), piece(SILV, ELF));
+  state_bit_put(state, pos_bit(40), piece(SILV, CAT));
+  state_bit_put(state, pos_bit(41), piece(GOLD, DOG));
+  state_bit_put(state, pos_bit(42), piece(GOLD, HRS));
+  state_bit_put(state, pos_bit(46), piece(GOLD, CML));
+  state_bit_put(state, pos_bit(49), piece(SILV, DOG));
+}
+
+int test_smoke_A__gold_move_data() {
+  struct state state = {0};
+  struct moves moves = {0};
+  int count;
+
+  setup_smoke_A(&state);
+  state.player_color = GOLD;
+
+  state_moves(&state, &moves);
+
+  if( 0x0000430001000200ull != moves.bits[0].bit_mobile ) return 1;
+  if( 0x0000030001000200ull != moves.bits[0].bit_special ) return 2;
+  if( 0x0000450003000000ull != moves.bits[1].bit_mobile ) return 3;
+  if( 0x0000010003000000ull != moves.bits[1].bit_special ) return 4;
+  if( 0x0000400000020204ull != moves.bits[2].bit_mobile ) return 5;
+  if( 0x0000000000020200ull != moves.bits[2].bit_special ) return 6;
+  if( 0x0000440000020004ull != moves.bits[3].bit_mobile ) return 7;
+  if( 0x0000000000020000ull != moves.bits[3].bit_special ) return 8;
+
+  for(count = 0; count < 1000; ++count) {
+    struct move move;
+    if(!moves_next(&moves, &move, &state)) {
+      break;
+    }
+  }
+
+  if( 18 != count ) return 9;
+
+  return 0;
+}
+
+int test_smoke_A__silv_move_data() {
+  struct state state = {0};
+  struct moves moves = {0};
+  int count;
+
+  setup_smoke_A(&state);
+  state.player_color = SILV;
+
+  state_moves(&state, &moves);
+
+  if( 0x000000000c000a00ull != moves.bits[0].bit_mobile ) return 1;
+  if( 0x000000000c000800ull != moves.bits[0].bit_special ) return 2;
+  if( 0x0002040008000c00ull != moves.bits[1].bit_mobile ) return 3;
+  if( 0x0000040008000c00ull != moves.bits[1].bit_special ) return 4;
+  if( 0x0002000400000200ull != moves.bits[2].bit_mobile ) return 5;
+  if( 0x0000000400000000ull != moves.bits[2].bit_special ) return 6;
+  if( 0x0002040408000800ull != moves.bits[3].bit_mobile ) return 7;
+  if( 0x0000040408000800ull != moves.bits[3].bit_special ) return 8;
+
+  for(count = 0; count < 1000; ++count) {
+    struct move move;
+    if(!moves_next(&moves, &move, &state)) {
+      break;
+    }
+  }
+
+  if( 17 != count ) return 9;
+
+  return 0;
+}
+
+int test_smoke_A__capt_gold_elf() {
+  struct moves moves = {0};
+  struct move move = {0};
+  struct state child = {0};
+
+  setup_smoke_A(&moves.parent);
+  moves.parent.player_color = GOLD;
+
+  moves.bits[0].bit_mobile  = 0;
+  moves.bits[0].bit_special = 0;
+  moves.bits[1].bit_mobile  = 0;
+  moves.bits[1].bit_special = 0;
+  moves.bits[2].bit_mobile  = 0;
+  moves.bits[2].bit_special = 0;
+  moves.bits[3].bit_mobile  = 0x0000000000020000ull;
+  moves.bits[3].bit_special = 0x0000000000020000ull;
+
+  if( !moves_next(&moves, &move, &child) ) return 1;
+  if( move.piece != piece(GOLD,ELF) ) return 2;
+  if( move.pos != 17 ) return 3;
+  if( move.direction != EAST ) return 4;
+  if( move.capture != 1 ) return 5;
+  if( move.capture_piece != piece(GOLD,ELF) ) return 6;
+  if( move.capture_pos != 18 ) return 7;
+
+  return 0;
+}
+
+int test_smoke_A__capt_gold_hrs() {
+  struct moves moves = {0};
+  struct move move = {0};
+  struct state child = {0};
+
+  setup_smoke_A(&moves.parent);
+  moves.parent.player_color = GOLD;
+
+  moves.bits[0].bit_mobile  = 0x0000020000000000ull;
+  moves.bits[0].bit_special = 0x0000020000000000ull;
+  moves.bits[1].bit_mobile  = 0;
+  moves.bits[1].bit_special = 0;
+  moves.bits[2].bit_mobile  = 0;
+  moves.bits[2].bit_special = 0;
+  moves.bits[3].bit_mobile  = 0;
+  moves.bits[3].bit_special = 0;
+
+  if( !moves_next(&moves, &move, &child) ) return 1;
+  if( move.piece != piece(GOLD,DOG) ) return 2;
+  if( move.pos != 41 ) return 3;
+  if( move.direction != NORTH ) return 4;
+  if( move.capture != 1 ) return 5;
+  if( move.capture_piece != piece(GOLD,HRS) ) return 6;
+  if( move.capture_pos != 42 ) return 7;
+
+  return 0;
 }
 
 /* ------------------------------------------------------------------ */
@@ -613,7 +755,7 @@ int main() {
   TEST(test_bit_east);
   TEST(test_bit_neighbors);
   TEST(test_bit_neighbors_all);
-  TEST(test_state_put);
+  TEST(test_state_bit_put);
   TEST(test_state_bit_color);
   TEST(test_state_bit_rank);
   TEST(test_state_bit_piece);
@@ -635,11 +777,16 @@ int main() {
   TEST(test_state_moves__push);
   TEST(test_state_moves__push_complete);
   TEST(test_state_moves__pull_complete);
+  TEST(test_state_moves__parent);
   TEST(test_moves_next_move__same_direction);
   TEST(test_moves_next_move__next_direction);
   TEST(test_moves_next_move__stop_iteration);
   TEST(test_moves_next__transition);
   TEST(test_moves_next__stop_iteration);
+  TEST(test_smoke_A__gold_move_data);
+  TEST(test_smoke_A__silv_move_data);
+  TEST(test_smoke_A__capt_gold_elf);
+  TEST(test_smoke_A__capt_gold_hrs);
 
   if(fail) {
     fprintf(stderr, "Failed %d of %d tests.\n", fail, count);
