@@ -1,0 +1,10 @@
+This is a fast arimaa move generator written in c.
+
+From a starting arimaa state, represented as a bit board, this generator
+produces a bit set representing all of the possible single step moves to
+the next state.  The bit set of moves is calculated efficiently, and in
+constant time, no matter if there are few or many moves.
+
+Standing alone, this is an incomplete program.  It is intended to be used
+as part of a larger program that uses artificial intelligence to decide
+the best move.
