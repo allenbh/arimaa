@@ -1,0 +1,6 @@
+This is a move generator written as a c python extension.
+
+I learned a bit about the c python api writing this extension.  I also learned
+that python is not appropriate any where near the inner loop of an expand
+function.  There is just too much overhead.
+
